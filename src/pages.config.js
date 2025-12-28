@@ -12,6 +12,7 @@ import Privacy from './pages/Privacy';
 import Settings from './pages/Settings';
 import TemplateLibrary from './pages/TemplateLibrary';
 import Terms from './pages/Terms';
+import Home from './pages/Home';
 import __Layout from './Layout.jsx';
 
 
@@ -30,6 +31,7 @@ export const PAGES = {
     "Settings": Settings,
     "TemplateLibrary": TemplateLibrary,
     "Terms": Terms,
+    "Home": Home,
 }
 
 export const pagesConfig = {
