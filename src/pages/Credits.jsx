@@ -89,7 +89,8 @@ export default function Credits() {
           expiring_credits: 0
         });
       }
-      return userCredits[0];
+      // Return the most recently updated credit record
+      return userCredits.sort((a, b) => new Date(b.updated_date) - new Date(a.updated_date))[0];
     },
     enabled: !!user && !isStaffOrAdmin
   });
