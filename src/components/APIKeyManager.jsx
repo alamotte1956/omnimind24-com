@@ -6,6 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Key, Eye, EyeOff, Trash2, Plus, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { sanitize } from '@/lib/sanitizer';
+
+// Minimum API key length for validation
+const MIN_API_KEY_LENGTH = 10;
 
 const PROVIDERS = [
   { id: 'openai', name: 'OpenAI', description: 'GPT-4, GPT-3.5 Turbo' },
@@ -69,11 +73,16 @@ export default function APIKeyManager() {
 
   const handleSave = (provider) => {
     const key = newKeys[provider];
-    if (!key || key.trim().length < 10) {
+    if (!key || key.trim().length < MIN_API_KEY_LENGTH) {
       toast.error('Please enter a valid API key');
       return;
     }
-    saveMutation.mutate({ provider, apiKey: key.trim() });
+    const sanitizedKey = sanitize(key.trim(), { type: 'apikey' });
+    if (!sanitizedKey || sanitizedKey.length < MIN_API_KEY_LENGTH) {
+      toast.error('Invalid API key format');
+      return;
+    }
+    saveMutation.mutate({ provider, apiKey: sanitizedKey });
   };
 
   return (
