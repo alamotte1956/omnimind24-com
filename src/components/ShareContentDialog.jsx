@@ -9,6 +9,7 @@ import { Share2, Loader2 } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { sanitize } from '@/lib/sanitizer';
 
 export default function ShareContentDialog({ contentOrderId, trigger }) {
   const [open, setOpen] = useState(false);
@@ -39,11 +40,17 @@ export default function ShareContentDialog({ contentOrderId, trigger }) {
       return;
     }
     
+    const sanitizedEmail = sanitize(email, { type: 'email' });
+    if (!sanitizedEmail) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+    
     shareMutation.mutate({
       content_order_id: contentOrderId,
-      shared_with_email: email,
+      shared_with_email: sanitizedEmail,
       permission,
-      message,
+      message: sanitize(message, { type: 'text', maxLength: 500 }),
       status: 'pending'
     });
   };

@@ -12,6 +12,7 @@ import {
   Folder, FolderPlus, Edit, Trash2, ChevronRight, ChevronDown, Plus
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { sanitize } from '@/lib/sanitizer';
 
 const FOLDER_COLORS = [
   { value: 'purple', label: 'Purple', class: 'bg-purple-500' },
@@ -96,10 +97,22 @@ export default function FolderManager({ onFolderSelect, selectedFolderId }) {
   };
 
   const handleSubmit = () => {
+    const sanitizedData = {
+      name: sanitize(formData.name, { type: 'text', maxLength: 100 }),
+      description: sanitize(formData.description, { type: 'text', maxLength: 500 }),
+      color: formData.color,
+      parent_folder_id: formData.parent_folder_id
+    };
+    
+    if (!sanitizedData.name) {
+      toast.error('Folder name is required');
+      return;
+    }
+    
     if (editingFolder) {
-      updateMutation.mutate({ id: editingFolder.id, data: formData });
+      updateMutation.mutate({ id: editingFolder.id, data: sanitizedData });
     } else {
-      createMutation.mutate(formData);
+      createMutation.mutate(sanitizedData);
     }
   };
 
@@ -152,7 +165,7 @@ export default function FolderManager({ onFolderSelect, selectedFolderId }) {
             {!hasSubfolders && <div className="w-4" />}
             <div className={`w-3 h-3 rounded-full ${colorClass}`} />
             <Folder className="w-4 h-4 text-gray-400" />
-            <span className="text-sm text-white">{folder.name}</span>
+            <span className="text-sm text-white">{sanitize(folder.name, { type: 'text' })}</span>
             {contentCount > 0 && (
               <span className="text-xs text-gray-500">({contentCount})</span>
             )}

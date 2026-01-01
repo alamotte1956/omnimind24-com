@@ -18,6 +18,7 @@ import SEOPanel from './SEOPanel';
 import ModelFeedbackDialog from './ModelFeedbackDialog';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { sanitize } from '@/lib/sanitizer';
 
 export default function ContentCard({ order, onCommentClick, onCancel }) {
   const queryClient = useQueryClient();
@@ -108,10 +109,11 @@ export default function ContentCard({ order, onCommentClick, onCancel }) {
   const addTag = () => {
     if (!newTag.trim()) return;
     const tags = order.tags || [];
-    if (!tags.includes(newTag.trim())) {
+    const sanitizedTag = sanitize(newTag.trim(), { type: 'text', maxLength: 50 });
+    if (sanitizedTag && !tags.includes(sanitizedTag)) {
       updateMutation.mutate({
         id: order.id,
-        data: { tags: [...tags, newTag.trim()] }
+        data: { tags: [...tags, sanitizedTag] }
       });
       setNewTag('');
       setIsTagDialogOpen(false);
@@ -135,9 +137,10 @@ export default function ContentCard({ order, onCommentClick, onCancel }) {
   };
 
   const updateTitle = () => {
+    const sanitizedTitle = sanitize(title.trim(), { type: 'text', maxLength: 200 });
     updateMutation.mutate({
       id: order.id,
-      data: { title: title.trim() }
+      data: { title: sanitizedTitle }
     });
     setIsEditingTitle(false);
   };
@@ -160,7 +163,7 @@ export default function ContentCard({ order, onCommentClick, onCancel }) {
               </div>
             ) : (
               <div className="flex items-center gap-2 mb-2">
-                {order.title && <h3 className="text-white font-semibold">{order.title}</h3>}
+                {order.title && <h3 className="text-white font-semibold">{sanitize(order.title, { type: 'text' })}</h3>}
                 {!order.title && (
                   <Button 
                     variant="ghost" 
@@ -234,7 +237,7 @@ export default function ContentCard({ order, onCommentClick, onCancel }) {
                     variant="outline" 
                     className="border-gray-700 text-xs"
                   >
-                    {tag}
+                    {sanitize(tag, { type: 'text' })}
                     <X 
                       className="w-3 h-3 ml-1 cursor-pointer" 
                       onClick={() => removeTag(tag)}
@@ -364,8 +367,8 @@ export default function ContentCard({ order, onCommentClick, onCancel }) {
         </div>
 
         {order.output_content && (
-          <div className="bg-[#0D0D0D] rounded-lg p-4 text-gray-300 text-sm max-h-48 overflow-y-auto">
-            {order.output_content}
+          <div className="bg-[#0D0D0D] rounded-lg p-4 text-gray-300 text-sm max-h-48 overflow-y-auto whitespace-pre-wrap">
+            {sanitize(order.output_content, { type: 'text', maxLength: 100000 })}
           </div>
         )}
 
@@ -403,7 +406,7 @@ export default function ContentCard({ order, onCommentClick, onCancel }) {
                   <SelectItem value={null}>No Folder</SelectItem>
                   {folders.map((folder) => (
                     <SelectItem key={folder.id} value={folder.id}>
-                      {folder.name}
+                      {sanitize(folder.name, { type: 'text' })}
                     </SelectItem>
                   ))}
                 </SelectContent>

@@ -8,6 +8,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { sanitize } from '@/lib/sanitizer';
 
 export default function CommentSection({ contentOrderId }) {
   const [newComment, setNewComment] = useState('');
@@ -53,9 +54,9 @@ export default function CommentSection({ contentOrderId }) {
 
     addCommentMutation.mutate({
       content_order_id: contentOrderId,
-      comment_text: newComment,
+      comment_text: sanitize(newComment, { type: 'text', maxLength: 5000 }),
       author_email: user.email,
-      author_name: user.full_name,
+      author_name: sanitize(user.full_name, { type: 'text', maxLength: 100 }),
       is_resolved: false
     });
   };
@@ -101,7 +102,7 @@ export default function CommentSection({ contentOrderId }) {
                     <User className="w-3 h-3 text-white" />
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-white">{comment.author_name}</p>
+                    <p className="text-sm font-medium text-white">{sanitize(comment.author_name, { type: 'text' })}</p>
                     <p className="text-xs text-gray-500">
                       {format(new Date(comment.created_date), 'MMM dd, HH:mm')}
                     </p>
@@ -118,7 +119,7 @@ export default function CommentSection({ contentOrderId }) {
                   </Button>
                 )}
               </div>
-              <p className="text-gray-300 text-sm">{comment.comment_text}</p>
+              <p className="text-gray-300 text-sm">{sanitize(comment.comment_text, { type: 'text' })}</p>
               {comment.is_resolved && (
                 <Badge className="mt-2 bg-green-600 text-white">
                   Resolved
