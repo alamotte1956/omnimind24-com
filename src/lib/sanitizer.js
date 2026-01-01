@@ -1,3 +1,5 @@
+import React from 'react';
+
 /**
  * Input sanitization utilities to prevent XSS and injection attacks
  */
