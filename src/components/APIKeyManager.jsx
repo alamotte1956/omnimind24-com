@@ -77,11 +77,16 @@ export default function APIKeyManager() {
       toast.error('Please enter a valid API key');
       return;
     }
+    
     const sanitizedKey = sanitize(key.trim(), { type: 'apikey' });
+    
+    // Verify sanitized key is still valid length
+    // (sanitization removes invalid characters which could shorten the key)
     if (!sanitizedKey || sanitizedKey.length < MIN_API_KEY_LENGTH) {
-      toast.error('Invalid API key format');
+      toast.error('Invalid API key format - contains invalid characters');
       return;
     }
+    
     saveMutation.mutate({ provider, apiKey: sanitizedKey });
   };
 

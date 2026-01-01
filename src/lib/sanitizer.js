@@ -26,11 +26,18 @@ export const sanitizeHTML = (html) => {
 export const sanitizeText = (text, maxLength = 1000) => {
   if (typeof text !== 'string') return '';
   
-  return text
+  let sanitized = text
     .replace(/[<>]/g, '') // Remove potential HTML tags
-    .replace(/javascript:/gi, '') // Remove javascript protocol
-    .replace(/on\w+=/gi, '') // Remove event handlers
-    .substring(0, maxLength);
+    .replace(/javascript:/gi, ''); // Remove javascript protocol
+  
+  // Remove event handlers - loop until no more found
+  let prevLength;
+  do {
+    prevLength = sanitized.length;
+    sanitized = sanitized.replace(/on\w+=/gi, '');
+  } while (sanitized.length !== prevLength);
+  
+  return sanitized.substring(0, maxLength);
 };
 
 // Sanitize URLs to prevent malicious URLs
