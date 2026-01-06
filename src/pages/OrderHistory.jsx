@@ -6,10 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarComponent } from "@/components/ui/calendar";
-import { Loader2, Calendar, FileText, Coins, Eye, Download, Search, Filter, ArrowUpDown, Trash2, X, Star, RotateCcw } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Loader2, Calendar, FileText, Coins, Eye, Download, Search, ArrowUpDown, Trash2, X, Star, RotateCcw } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
 import AuthGuard from '../components/AuthGuard';
@@ -24,6 +24,9 @@ export default function OrderHistory() {
   const [sortOrder, setSortOrder] = useState('desc');
   const [dateRange, setDateRange] = useState({ from: null, to: null });
   const [selectedOrders, setSelectedOrders] = useState([]);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [pendingDeleteOrder, setPendingDeleteOrder] = useState(null);
+  const [isBulkDeleteConfirmOpen, setIsBulkDeleteConfirmOpen] = useState(false);
 
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ['order-history'],
@@ -164,16 +167,41 @@ export default function OrderHistory() {
   };
 
   const downloadContent = (order) => {
-    const blob = new Blob([order.output_content], { type: 'text/plain' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${order.title || 'content'}-${order.id}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    a.remove();
-    toast.success('Content downloaded');
+    try {
+      const blob = new Blob([order.output_content], { type: 'text/plain' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${order.title || 'content'}-${order.id}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+      toast.success('Content downloaded');
+      return true;
+    } catch (error) {
+      toast.error('Download failed');
+      return false;
+    }
+  };
+
+  const handleDownloadAndDelete = (order) => {
+    setPendingDeleteOrder(order);
+    setIsDeleteConfirmOpen(true);
+  };
+
+  const confirmDownloadAndDelete = async () => {
+    if (!pendingDeleteOrder) return;
+    
+    const success = downloadContent(pendingDeleteOrder);
+    if (success) {
+      await base44.entities.ContentOrder.delete(pendingDeleteOrder.id);
+      queryClient.invalidateQueries(['order-history']);
+      toast.success('Content downloaded and deleted');
+    }
+    
+    setIsDeleteConfirmOpen(false);
+    setPendingDeleteOrder(null);
   };
 
   const downloadAllSelected = () => {
@@ -187,6 +215,47 @@ export default function OrderHistory() {
 
     completedOrders.forEach(order => downloadContent(order));
     toast.success(`Downloaded ${completedOrders.length} order(s)`);
+  };
+
+  const downloadAndDeleteAllSelected = () => {
+    const selectedOrdersData = filteredAndSortedOrders.filter(o => selectedOrders.includes(o.id));
+    const completedOrders = selectedOrdersData.filter(o => o.status === 'completed' && o.output_content);
+    
+    if (completedOrders.length === 0) {
+      toast.error('No completed orders to download');
+      return;
+    }
+
+    setIsBulkDeleteConfirmOpen(true);
+  };
+
+  const confirmBulkDownloadAndDelete = async () => {
+    const selectedOrdersData = filteredAndSortedOrders.filter(o => selectedOrders.includes(o.id));
+    const completedOrders = selectedOrdersData.filter(o => o.status === 'completed' && o.output_content);
+    
+    // Download all first and track which ones succeeded
+    const successfulDownloads = [];
+    for (const order of completedOrders) {
+      const success = downloadContent(order);
+      if (success) {
+        successfulDownloads.push(order.id);
+      }
+    }
+    
+    // Only delete items that were successfully downloaded
+    if (successfulDownloads.length > 0) {
+      for (const orderId of successfulDownloads) {
+        await base44.entities.ContentOrder.delete(orderId);
+      }
+      
+      queryClient.invalidateQueries(['order-history']);
+      setSelectedOrders([]);
+      toast.success(`Downloaded and deleted ${successfulDownloads.length} item(s)`);
+    } else {
+      toast.error('No items were successfully downloaded');
+    }
+    
+    setIsBulkDeleteConfirmOpen(false);
   };
 
   const deleteSelected = () => {
@@ -345,6 +414,16 @@ export default function OrderHistory() {
                       <Button
                         variant="outline"
                         size="sm"
+                        onClick={downloadAndDeleteAllSelected}
+                        className="bg-[#0D0D0D] border-red-600 text-red-400 hover:bg-red-600/20"
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Download & Delete ({selectedOrders.length})
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
                         onClick={deleteSelected}
                         disabled={deleteOrdersMutation.isPending}
                         className="bg-[#0D0D0D] border-gray-700 text-white hover:bg-red-600/20"
@@ -495,6 +574,16 @@ export default function OrderHistory() {
                               <Download className="w-4 h-4 mr-2" />
                               Download
                             </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDownloadAndDelete(order)}
+                              className="border-red-600 text-red-400 hover:bg-red-600/20 hover:border-red-500"
+                            >
+                              <Download className="w-4 h-4 mr-2" />
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Download & Delete
+                            </Button>
                           </>
                         )}
                         <Button
@@ -516,6 +605,61 @@ export default function OrderHistory() {
             </div>
           )}
         </div>
+
+        {/* Single Order Delete Confirmation Dialog */}
+        <AlertDialog open={isDeleteConfirmOpen} onOpenChange={setIsDeleteConfirmOpen}>
+          <AlertDialogContent className="bg-[#1A1A1A] border-gray-800">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-white">Download and delete this content?</AlertDialogTitle>
+              <AlertDialogDescription className="text-gray-400">
+                The content will be downloaded first, then permanently deleted. This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel 
+                onClick={() => {
+                  setIsDeleteConfirmOpen(false);
+                  setPendingDeleteOrder(null);
+                }}
+                className="bg-[#0D0D0D] border-gray-700 text-white hover:bg-gray-800"
+              >
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmDownloadAndDelete}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                Download & Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Bulk Delete Confirmation Dialog */}
+        <AlertDialog open={isBulkDeleteConfirmOpen} onOpenChange={setIsBulkDeleteConfirmOpen}>
+          <AlertDialogContent className="bg-[#1A1A1A] border-gray-800">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-white">Download and delete selected items?</AlertDialogTitle>
+              <AlertDialogDescription className="text-gray-400">
+                {selectedOrders.length} item(s) will be downloaded first, then permanently deleted. This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel 
+                onClick={() => setIsBulkDeleteConfirmOpen(false)}
+                className="bg-[#0D0D0D] border-gray-700 text-white hover:bg-gray-800"
+              >
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmBulkDownloadAndDelete}
+                className="bg-red-600 hover:bg-red-700 text-white"
+              >
+                Download & Delete All
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </OnboardingGuard>
     </AuthGuard>
   );

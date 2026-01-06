@@ -1,17 +1,21 @@
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, MessageSquare, Brain, TrendingUp, Download, Sparkles, FileDown } from 'lucide-react';
+import { FileText, Brain, TrendingUp, Download, FileDown, Trash2 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
-import { createPageUrl } from '../utils';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import AuthGuard from '../components/AuthGuard';
 import OnboardingGuard from '../components/OnboardingGuard';
 import OnboardingWelcome from '../components/OnboardingWelcome';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Link } from 'react-router-dom';
+import { toast } from 'sonner';
 
 export default function Dashboard() {
+  const queryClient = useQueryClient();
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [pendingDeleteOrder, setPendingDeleteOrder] = useState(null);
+
   const { data: user } = useQuery({
     queryKey: ['user'],
     queryFn: () => base44.auth.me()
@@ -48,6 +52,44 @@ export default function Dashboard() {
   ];
 
   const hasOrders = orders.length > 0;
+
+  const downloadOrder = (order) => {
+    try {
+      const blob = new Blob([order.output_content], { type: 'text/plain' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${order.title || 'content'}-${order.id}.txt`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      a.remove();
+      toast.success('Content downloaded');
+      return true;
+    } catch (error) {
+      toast.error('Download failed');
+      return false;
+    }
+  };
+
+  const handleDownloadAndDelete = (order) => {
+    setPendingDeleteOrder(order);
+    setIsDeleteConfirmOpen(true);
+  };
+
+  const confirmDownloadAndDelete = async () => {
+    if (!pendingDeleteOrder) return;
+    
+    const success = downloadOrder(pendingDeleteOrder);
+    if (success) {
+      await base44.entities.ContentOrder.delete(pendingDeleteOrder.id);
+      queryClient.invalidateQueries(['content-orders']);
+      toast.success('Content downloaded and deleted');
+    }
+    
+    setIsDeleteConfirmOpen(false);
+    setPendingDeleteOrder(null);
+  };
 
   return (
     <AuthGuard>
@@ -123,28 +165,38 @@ export default function Dashboard() {
                         {order.status === 'completed' ? 'Ready' : order.status === 'processing' ? 'Processing' : 'Failed'}
                       </div>
                       {order.status === 'completed' && order.output_content && (
-                        <Button 
-                          size="sm"
-                          onClick={async () => {
-                            try {
-                              const blob = new Blob([order.output_content], { type: 'text/plain' });
-                              const url = window.URL.createObjectURL(blob);
-                              const a = document.createElement('a');
-                              a.href = url;
-                              a.download = `${order.title || 'content'}-${order.id}.txt`;
-                              document.body.appendChild(a);
-                              a.click();
-                              window.URL.revokeObjectURL(url);
-                              a.remove();
-                            } catch (error) {
-                              // Error handled by toast notification
-                              alert('Download failed. Please try again.');
-                            }
-                          }}
-                          className="bg-purple-600 hover:bg-purple-700 h-7 px-2"
-                        >
-                          <Download className="w-3 h-3" />
-                        </Button>
+                        <>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button 
+                                size="sm"
+                                onClick={() => downloadOrder(order)}
+                                className="bg-purple-600 hover:bg-purple-700 h-7 px-2"
+                              >
+                                <Download className="w-3 h-3" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Download content as TXT file</p>
+                            </TooltipContent>
+                          </Tooltip>
+                          
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button 
+                                size="sm"
+                                onClick={() => handleDownloadAndDelete(order)}
+                                className="bg-red-600 hover:bg-red-700 h-7 px-2"
+                              >
+                                <Download className="w-3 h-3 mr-1" />
+                                <Trash2 className="w-3 h-3" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Download & Delete - Downloads the content then removes it from your list</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </>
                       )}
                     </div>
                   </div>
@@ -223,6 +275,35 @@ export default function Dashboard() {
         </Card>
       </div>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={isDeleteConfirmOpen} onOpenChange={setIsDeleteConfirmOpen}>
+        <AlertDialogContent className="bg-[#1A1A1A] border-gray-800">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">Download and delete this content?</AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              The content will be downloaded first, then permanently deleted from your order history. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel 
+              onClick={() => {
+                setIsDeleteConfirmOpen(false);
+                setPendingDeleteOrder(null);
+              }}
+              className="bg-[#0D0D0D] border-gray-700 text-white hover:bg-gray-800"
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDownloadAndDelete}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Download & Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       </TooltipProvider>
       </OnboardingGuard>
       </AuthGuard>

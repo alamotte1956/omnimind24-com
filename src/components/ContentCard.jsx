@@ -1,18 +1,20 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Copy, CheckCircle, Loader2, MessageSquare, Star, 
   FolderOpen, Tag, Edit, Trash2, MoreVertical, X, Download, RefreshCw, Search,
-  FileText, Music, Video
+  FileText, Music
 } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from "@/components/ui/dropdown-menu";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 import ShareContentDialog from './ShareContentDialog';
 import SEOPanel from './SEOPanel';
 import ModelFeedbackDialog from './ModelFeedbackDialog';
@@ -29,6 +31,11 @@ export default function ContentCard({ order, onCommentClick, onCancel }) {
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [title, setTitle] = useState(order.title || '');
   const [showSEO, setShowSEO] = useState(false);
+  const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
+  const [pendingDeleteFormat, setPendingDeleteFormat] = useState(null);
+  const [autoDeleteEnabled, setAutoDeleteEnabled] = useState(
+    localStorage.getItem('autoDeleteAfterDownload') === 'true'
+  );
 
   const { data: folders = [] } = useQuery({
     queryKey: ['content-folders'],
@@ -57,41 +64,103 @@ export default function ContentCard({ order, onCommentClick, onCancel }) {
   };
 
   const downloadContent = async (format = 'txt') => {
-    if (format === 'txt') {
-      const blob = new Blob([order.output_content], { type: 'text/plain' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${order.title || 'content'}-${order.id}.txt`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      a.remove();
-      toast.success('Content downloaded');
-    } else if (['pdf', 'docx', 'pptx'].includes(format)) {
-      toast.loading(`Generating ${format.toUpperCase()}...`);
-      try {
+    try {
+      if (format === 'txt') {
+        const blob = new Blob([order.output_content], { type: 'text/plain' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${order.title || 'content'}-${order.id}.txt`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        a.remove();
+        toast.success('Content downloaded');
+        return true;
+      } else if (['pdf', 'docx', 'pptx'].includes(format)) {
+        toast.loading(`Generating ${format.toUpperCase()}...`);
         const response = await base44.functions.invoke('exportContent', {
           content_order_id: order.id,
           format: format
         });
         
         toast.success(`${format.toUpperCase()} generated! Check your email for the download link.`);
-      } catch (error) {
-        toast.error(`Failed to generate ${format.toUpperCase()}`);
-      }
-    } else if (format === 'mp3') {
-      toast.loading('Generating audio...');
-      try {
+        return true;
+      } else if (format === 'mp3') {
+        toast.loading('Generating audio...');
         const response = await base44.functions.invoke('exportAudio', {
           content_order_id: order.id
         });
         
         toast.success('Audio generated! Check your email for the download link.');
-      } catch (error) {
-        toast.error('Failed to generate audio');
+        return true;
+      }
+    } catch (error) {
+      toast.error(`Failed to download ${format.toUpperCase()}`);
+      return false;
+    }
+  };
+
+  const handleDownloadAndDelete = async (format) => {
+    // For PDF, DOCX, PPTX, and MP3, the download is sent via email
+    // We should warn the user and give them the option to proceed
+    const isAsyncFormat = ['pdf', 'docx', 'pptx', 'mp3'].includes(format);
+    
+    if (isAsyncFormat && !autoDeleteEnabled) {
+      // Show a different confirmation for async formats
+      setPendingDeleteFormat(format);
+      setIsDeleteConfirmOpen(true);
+      return;
+    }
+    
+    if (autoDeleteEnabled) {
+      // For sync formats (TXT), download and delete immediately
+      // For async formats, warn the user
+      if (isAsyncFormat) {
+        toast.error('Auto-delete is not supported for PDF, DOCX, PPTX, and MP3 formats. These are sent via email.');
+        await downloadContent(format);
+        return;
+      }
+      
+      const success = await downloadContent(format);
+      if (success) {
+        deleteMutation.mutate(order.id);
+        toast.success('Content downloaded and deleted');
+      }
+    } else {
+      // Show confirmation dialog
+      setPendingDeleteFormat(format);
+      setIsDeleteConfirmOpen(true);
+    }
+  };
+
+  const confirmDownloadAndDelete = async () => {
+    if (!pendingDeleteFormat) return;
+    
+    const isAsyncFormat = ['pdf', 'docx', 'pptx', 'mp3'].includes(pendingDeleteFormat);
+    
+    if (isAsyncFormat) {
+      // For async formats, just initiate the download - don't delete
+      await downloadContent(pendingDeleteFormat);
+      toast.warning(`${pendingDeleteFormat.toUpperCase()} will be sent to your email. Content NOT deleted for safety.`);
+    } else {
+      // For TXT, download and delete
+      const success = await downloadContent(pendingDeleteFormat);
+      if (success) {
+        deleteMutation.mutate(order.id);
+        toast.success('Content downloaded and deleted');
       }
     }
+    
+    setIsDeleteConfirmOpen(false);
+    setPendingDeleteFormat(null);
+  };
+
+  const toggleAutoDelete = () => {
+    const newValue = !autoDeleteEnabled;
+    setAutoDeleteEnabled(newValue);
+    localStorage.setItem('autoDeleteAfterDownload', newValue.toString());
+    toast.success(`Auto-delete ${newValue ? 'enabled' : 'disabled'}`);
   };
 
   const refreshOrder = () => {
@@ -273,7 +342,20 @@ export default function ContentCard({ order, onCommentClick, onCancel }) {
                       <Download className="w-4 h-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="bg-[#1A1A1A] border-gray-800">
+                  <DropdownMenuContent className="bg-[#1A1A1A] border-gray-800 w-64">
+                    <DropdownMenuLabel className="text-white flex items-center justify-between">
+                      <span>Download Options</span>
+                      <label className="flex items-center gap-2 cursor-pointer text-xs text-gray-400 font-normal">
+                        <Checkbox 
+                          checked={autoDeleteEnabled}
+                          onCheckedChange={toggleAutoDelete}
+                          className="border-gray-600"
+                        />
+                        Auto-delete
+                      </label>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator className="bg-gray-800" />
+                    
                     <DropdownMenuItem onClick={() => downloadContent('txt')}>
                       <FileText className="w-4 h-4 mr-2" />
                       Download TXT
@@ -293,6 +375,50 @@ export default function ContentCard({ order, onCommentClick, onCancel }) {
                     <DropdownMenuItem onClick={() => downloadContent('mp3')}>
                       <Music className="w-4 h-4 mr-2" />
                       Download MP3
+                    </DropdownMenuItem>
+                    
+                    <DropdownMenuSeparator className="bg-gray-800" />
+                    <DropdownMenuLabel className="text-red-400 text-xs">Download & Delete</DropdownMenuLabel>
+                    
+                    <DropdownMenuItem 
+                      onClick={() => handleDownloadAndDelete('txt')}
+                      className="text-red-400 hover:bg-red-600/20"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      TXT & Delete
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => handleDownloadAndDelete('pdf')}
+                      className="text-red-400 hover:bg-red-600/20"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      PDF & Delete
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => handleDownloadAndDelete('docx')}
+                      className="text-red-400 hover:bg-red-600/20"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      DOCX & Delete
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => handleDownloadAndDelete('pptx')}
+                      className="text-red-400 hover:bg-red-600/20"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      PPTX & Delete
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      onClick={() => handleDownloadAndDelete('mp3')}
+                      className="text-red-400 hover:bg-red-600/20"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      MP3 & Delete
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -422,6 +548,49 @@ export default function ContentCard({ order, onCommentClick, onCancel }) {
           </div>
         )}
       </CardContent>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={isDeleteConfirmOpen} onOpenChange={setIsDeleteConfirmOpen}>
+        <AlertDialogContent className="bg-[#1A1A1A] border-gray-800">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-white">
+              {pendingDeleteFormat && ['pdf', 'docx', 'pptx', 'mp3'].includes(pendingDeleteFormat)
+                ? `Download ${pendingDeleteFormat.toUpperCase()}?`
+                : 'Delete this content after download?'
+              }
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-gray-400">
+              {pendingDeleteFormat && ['pdf', 'docx', 'pptx', 'mp3'].includes(pendingDeleteFormat)
+                ? `${pendingDeleteFormat.toUpperCase()} will be generated and sent to your email. The content will NOT be deleted for safety reasons since the download is delivered asynchronously.`
+                : 'The content will be downloaded first, then permanently deleted. This action cannot be undone.'
+              }
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel 
+              onClick={() => {
+                setIsDeleteConfirmOpen(false);
+                setPendingDeleteFormat(null);
+              }}
+              className="bg-[#0D0D0D] border-gray-700 text-white hover:bg-gray-800"
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDownloadAndDelete}
+              className={pendingDeleteFormat && ['pdf', 'docx', 'pptx', 'mp3'].includes(pendingDeleteFormat)
+                ? "bg-purple-600 hover:bg-purple-700 text-white"
+                : "bg-red-600 hover:bg-red-700 text-white"
+              }
+            >
+              {pendingDeleteFormat && ['pdf', 'docx', 'pptx', 'mp3'].includes(pendingDeleteFormat)
+                ? 'Generate & Send'
+                : 'Download & Delete'
+              }
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

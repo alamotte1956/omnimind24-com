@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Check, Zap, Crown, Sparkles, CreditCard } from 'lucide-react';
 import AuthGuard from '../components/AuthGuard';
 
@@ -69,6 +68,70 @@ const CREDIT_PACKAGES = [
   { amount: 1000, price: 120, bonus: 200 }
 ];
 
+const HYBRID_PLANS = [
+  {
+    name: 'Starter Hybrid',
+    price: 39,
+    credits: 250,
+    bonusCredits: 50,
+    discount: 15,
+    icon: Zap,
+    color: 'purple',
+    features: [
+      '250 monthly credits',
+      '+50 bonus credits on signup',
+      '15% off additional credit purchases',
+      'Access to all AI models',
+      'Basic analytics',
+      'Email support',
+      'Credits roll over (3 months)'
+    ]
+  },
+  {
+    name: 'Growth Hybrid',
+    price: 79,
+    credits: 600,
+    bonusCredits: 150,
+    discount: 20,
+    icon: Crown,
+    color: 'blue',
+    popular: true,
+    features: [
+      '600 monthly credits',
+      '+150 bonus credits on signup',
+      '20% off additional credit purchases',
+      'Priority AI model access',
+      'Advanced analytics & insights',
+      'Priority email support',
+      'Faster processing speed',
+      'Team collaboration (up to 3)',
+      'Credits roll over (6 months)'
+    ]
+  },
+  {
+    name: 'Business Hybrid',
+    price: 159,
+    credits: 1500,
+    bonusCredits: 500,
+    discount: 25,
+    icon: Sparkles,
+    color: 'green',
+    features: [
+      '1500 monthly credits',
+      '+500 bonus credits on signup',
+      '25% off additional credit purchases',
+      'Unlimited AI model access',
+      'Full analytics suite',
+      'Dedicated account manager',
+      'Fastest processing priority',
+      'Unlimited team members',
+      'Custom integrations',
+      'API access',
+      'Credits never expire'
+    ]
+  }
+];
+
 export default function Pricing() {
   const navigate = useNavigate();
   const [billingCycle, setBillingCycle] = useState('monthly');
@@ -104,10 +167,109 @@ export default function Pricing() {
             </div>
           </div>
 
+          {/* Hybrid Plans - RECOMMENDED */}
+          <div className="mb-16">
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full mb-4">
+                <Crown className="w-5 h-5 text-white" />
+                <span className="text-white font-bold text-lg">Recommended: Hybrid Plans</span>
+                <Crown className="w-5 h-5 text-white" />
+              </div>
+              <h2 className="text-3xl font-bold text-white mb-2">Hybrid Pricing Plans</h2>
+              <p className="text-gray-400 text-lg">Best value - Monthly credits + Discounted pay-as-you-go purchases</p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              {HYBRID_PLANS.map((plan) => {
+                const Icon = plan.icon;
+                const gradientColors = {
+                  purple: 'from-purple-600 to-purple-800',
+                  blue: 'from-blue-600 to-blue-800',
+                  green: 'from-green-600 to-green-800'
+                };
+                const bgColors = {
+                  purple: 'bg-purple-600',
+                  blue: 'bg-blue-600',
+                  green: 'bg-green-600'
+                };
+                return (
+                  <Card
+                    key={plan.name}
+                    className={`bg-gradient-to-br from-[#1A1A1A] to-[#0D0D0D] border-2 ${
+                      plan.popular ? 'border-purple-500 shadow-lg shadow-purple-500/50' : 'border-gray-800'
+                    } hover:border-purple-500 transition-all relative transform hover:scale-105`}
+                  >
+                    {plan.popular && (
+                      <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                        <Badge className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-1 text-sm">
+                          ⭐ Most Popular
+                        </Badge>
+                      </div>
+                    )}
+                    <CardHeader className="text-center pb-4">
+                      <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${gradientColors[plan.color]} flex items-center justify-center mx-auto mb-4 shadow-lg`}>
+                        <Icon className={`w-8 h-8 text-white`} />
+                      </div>
+                      <CardTitle className="text-white text-2xl">{plan.name}</CardTitle>
+                      <div className="mt-4">
+                        <span className="text-5xl font-bold text-white">${plan.price}</span>
+                        <span className="text-gray-400">/month</span>
+                      </div>
+                      <div className="mt-2 space-y-1">
+                        <CardDescription className="text-purple-400 font-semibold">
+                          {plan.credits} credits/month
+                        </CardDescription>
+                        <Badge className="bg-green-600 text-white">
+                          +{plan.bonusCredits} bonus credits
+                        </Badge>
+                        <div className="text-yellow-400 font-bold text-sm mt-2">
+                          🎯 {plan.discount}% off extra credits
+                        </div>
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <ul className="space-y-3 mb-6">
+                        {plan.features.map((feature, idx) => (
+                          <li key={idx} className="flex items-start gap-2 text-gray-300">
+                            <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                            <span className="text-sm">{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <Button
+                        onClick={() => handleSubscribe(plan)}
+                        className={`w-full ${
+                          plan.popular
+                            ? 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700'
+                            : 'bg-gray-700 hover:bg-gray-600'
+                        } font-bold`}
+                      >
+                        Get Started
+                      </Button>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+
+            <div className="text-center">
+              <p className="text-gray-400 text-sm">
+                💡 Perfect for growing businesses • Best price per credit • Combine subscription + pay-as-you-go flexibility
+              </p>
+            </div>
+          </div>
+
+          {/* Divider */}
+          <div className="flex items-center gap-4 mb-16">
+            <div className="flex-1 h-px bg-gray-800" />
+            <span className="text-gray-500 font-semibold">OR CHOOSE</span>
+            <div className="flex-1 h-px bg-gray-800" />
+          </div>
+
           {/* Subscription Plans */}
           <div className="mb-16">
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-white mb-2">Subscription Plans</h2>
+              <h2 className="text-3xl font-bold text-white mb-2">Standard Subscription Plans</h2>
               <p className="text-gray-400">Get monthly credits at discounted rates</p>
             </div>
 
@@ -243,33 +405,57 @@ export default function Pricing() {
           {/* Comparison Table */}
           <div className="mb-16">
             <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-white mb-2">Subscription vs Pay-as-you-go</h2>
+              <h2 className="text-3xl font-bold text-white mb-2">Compare All Pricing Options</h2>
               <p className="text-gray-400">Find the best option for your usage</p>
             </div>
 
             <Card className="bg-[#1A1A1A] border-gray-800">
               <CardContent className="p-6">
-                <div className="grid grid-cols-3 gap-4 text-center">
+                <div className="grid grid-cols-4 gap-4 text-center">
+                  <div className="border-r border-gray-800 pr-4">
+                    <div className="text-purple-400 font-semibold mb-2">Pricing Model</div>
+                    <div className="space-y-2">
+                      <div className="text-white font-medium">Hybrid (Recommended)</div>
+                      <div className="text-sm text-gray-400">Monthly subscription + discounted extra credits</div>
+                    </div>
+                  </div>
                   <div className="border-r border-gray-800 pr-4">
                     <div className="text-purple-400 font-semibold mb-2">Best For</div>
                     <div className="space-y-2">
-                      <div className="text-white font-medium">Subscription</div>
-                      <div className="text-sm text-gray-400">Regular users who need predictable costs</div>
+                      <div className="text-white font-medium">Growing Teams</div>
+                      <div className="text-sm text-gray-400">Predictable baseline + flexibility for peaks</div>
                     </div>
                   </div>
                   <div className="border-r border-gray-800 pr-4">
-                    <div className="text-purple-400 font-semibold mb-2">Cost per Credit</div>
+                    <div className="text-purple-400 font-semibold mb-2">Value</div>
                     <div className="space-y-2">
-                      <div className="text-white font-medium">$0.10 - $0.15</div>
-                      <div className="text-sm text-gray-400">Lower cost with subscriptions</div>
+                      <div className="text-white font-medium">Best Overall</div>
+                      <div className="text-sm text-gray-400">Lowest cost per credit + bonus credits</div>
                     </div>
                   </div>
                   <div>
-                    <div className="text-purple-400 font-semibold mb-2">Flexibility</div>
+                    <div className="text-purple-400 font-semibold mb-2">Commitment</div>
                     <div className="space-y-2">
-                      <div className="text-white font-medium">Pay-as-you-go</div>
-                      <div className="text-sm text-gray-400">Buy only what you need, when you need it</div>
+                      <div className="text-white font-medium">Flexible</div>
+                      <div className="text-sm text-gray-400">Cancel anytime, credits roll over</div>
                     </div>
+                  </div>
+                </div>
+                <div className="border-t border-gray-800 mt-6 pt-6 grid grid-cols-3 gap-4 text-center">
+                  <div>
+                    <div className="text-gray-500 font-medium mb-2 text-sm">Subscription Only</div>
+                    <div className="text-white text-sm">Fixed monthly credits</div>
+                    <div className="text-xs text-gray-400 mt-1">$0.10-$0.15 per credit</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-500 font-medium mb-2 text-sm">Hybrid</div>
+                    <div className="text-purple-400 text-sm font-bold">Monthly + bonus + discount</div>
+                    <div className="text-xs text-green-400 mt-1">$0.08-$0.12 per credit</div>
+                  </div>
+                  <div>
+                    <div className="text-gray-500 font-medium mb-2 text-sm">Pay-as-you-go Only</div>
+                    <div className="text-white text-sm">Buy when needed</div>
+                    <div className="text-xs text-gray-400 mt-1">$0.15-$0.18 per credit</div>
                   </div>
                 </div>
               </CardContent>
@@ -282,6 +468,17 @@ export default function Pricing() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card className="bg-[#1A1A1A] border-gray-800">
+              <CardHeader>
+                <CardTitle className="text-white text-lg">Why choose a Hybrid plan?</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-400">
+                  Hybrid plans give you the best of both worlds: consistent monthly credits at a great rate, plus discounts on additional purchases. Perfect for teams with variable workloads.
+                </p>
+              </CardContent>
+            </Card>
+
             <Card className="bg-[#1A1A1A] border-gray-800">
               <CardHeader>
                 <CardTitle className="text-white text-lg">Can I combine both options?</CardTitle>
