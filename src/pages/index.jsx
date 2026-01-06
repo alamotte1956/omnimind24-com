@@ -2,6 +2,8 @@ import Layout from "./Layout.jsx";
 
 import ActionList from "./ActionList";
 
+import Home from "./Home";
+
 import Login from "./LoginEnhanced";
 
 import Admin from "./Admin";
@@ -33,6 +35,8 @@ import Terms from "./Terms";
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 
 const PAGES = {
+    
+    Home: Home,
     
     Login: Login,
     
@@ -84,51 +88,65 @@ function PagesContent() {
     const location = useLocation();
     const currentPage = _getCurrentPage(location.pathname);
     
-    return (
-        <Layout currentPageName={currentPage}>
-            <Routes>            
-                
-                    <Route path="/" element={<ActionList />} />
-                
-                <Route path="/Login" element={<Login />} />
-                
-                
-                <Route path="/ActionList" element={<ActionList />} />
-                
-                <Route path="/Admin" element={<Admin />} />
-                
-                <Route path="/Affiliate" element={<Affiliate />} />
-                
-                <Route path="/ContentOrders" element={<ContentOrders />} />
-                
-                <Route path="/Credits" element={<Credits />} />
-                
-                <Route path="/Dashboard" element={<Dashboard />} />
-                
-                <Route path="/Models" element={<Models />} />
-                
-                <Route path="/MyFiles" element={<MyFiles />} />
-                
-                <Route path="/Onboarding" element={<Onboarding />} />
-                
-                <Route path="/OrderHistory" element={<OrderHistory />} />
-                
-                <Route path="/Privacy" element={<Privacy />} />
-                
-                <Route path="/Settings" element={<Settings />} />
-                
-                <Route path="/TemplateLibrary" element={<TemplateLibrary />} />
-                
-                <Route path="/Terms" element={<Terms />} />
-                
-            </Routes>
-        </Layout>
+    // Pages that should not have the sidebar layout
+    const noLayoutPages = ['/', '/Home', '/Login'];
+    const shouldUseLayout = !noLayoutPages.includes(location.pathname);
+    
+    const routes = (
+        <Routes>            
+            
+                <Route path="/" element={<Home />} />
+            
+            <Route path="/Home" element={<Home />} />
+            
+            <Route path="/Login" element={<Login />} />
+            
+            
+            <Route path="/ActionList" element={<ActionList />} />
+            
+            <Route path="/Admin" element={<Admin />} />
+            
+            <Route path="/Affiliate" element={<Affiliate />} />
+            
+            <Route path="/ContentOrders" element={<ContentOrders />} />
+            
+            <Route path="/Credits" element={<Credits />} />
+            
+            <Route path="/Dashboard" element={<Dashboard />} />
+            
+            <Route path="/Models" element={<Models />} />
+            
+            <Route path="/MyFiles" element={<MyFiles />} />
+            
+            <Route path="/Onboarding" element={<Onboarding />} />
+            
+            <Route path="/OrderHistory" element={<OrderHistory />} />
+            
+            <Route path="/Privacy" element={<Privacy />} />
+            
+            <Route path="/Settings" element={<Settings />} />
+            
+            <Route path="/TemplateLibrary" element={<TemplateLibrary />} />
+            
+            <Route path="/Terms" element={<Terms />} />
+            
+        </Routes>
     );
+    
+    if (shouldUseLayout) {
+        return (
+            <Layout currentPageName={currentPage}>
+                {routes}
+            </Layout>
+        );
+    }
+    
+    return routes;
 }
 
 export default function Pages() {
     return (
-        <Router>
+        <Router basename="/omnimind24-com">
             <PagesContent />
         </Router>
     );

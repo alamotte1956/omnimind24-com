@@ -24,39 +24,35 @@ export default function Home() {
     <div className="min-h-screen bg-[#0D0D0D]">
       <div className="max-w-7xl mx-auto px-6 py-16">
         {/* Hero Section */}
-        <div className="text-center mb-16">
-          <h1 className="text-6xl font-bold text-white mb-6">
-            Welcome to <span className="text-purple-500">OmniMind24</span>
-          </h1>
-          <p className="text-xl text-gray-400 mb-8 max-w-3xl mx-auto">
-            Your AI-powered content generation platform. Create amazing content with cutting-edge AI technology.
-          </p>
-          <div className="flex gap-4 justify-center">
-            {user ? (
-              <Button
-                onClick={() => navigate('/Dashboard')}
-                className="bg-purple-600 hover:bg-purple-700 text-lg px-8 py-6"
-              >
-                Go to Dashboard <ArrowRight className="w-5 h-5 ml-2" />
-              </Button>
-            ) : (
-              <>
-                <Button
-                  onClick={() => base44.auth.redirectToLogin()}
-                  className="bg-purple-600 hover:bg-purple-700 text-lg px-8 py-6"
-                >
-                  Get Started <ArrowRight className="w-5 h-5 ml-2" />
-                </Button>
-                <Button
-                  onClick={() => navigate('/ContentOrders')}
-                  variant="outline"
-                  className="border-gray-700 text-white hover:bg-gray-800 text-lg px-8 py-6"
-                >
-                  Explore Features
-                </Button>
-              </>
-            )}
+        <div className="flex flex-col items-center justify-center min-h-[80vh] text-center mb-16">
+          {/* Logo Section */}
+          <div className="mb-12">
+            <div className="inline-block p-6 border-4 border-amber-500 rounded-lg bg-[#1A1A1A] shadow-lg shadow-amber-500/20 transition-all duration-300 hover:shadow-amber-500/40">
+              <img 
+                src="/logo.svg" 
+                alt="OmniMind24 Logo" 
+                className="w-32 h-32 md:w-40 md:h-40 mx-auto"
+              />
+            </div>
+            <p className="text-amber-500 font-semibold text-lg mt-4 tracking-wide">
+              Intelligence Means Business
+            </p>
           </div>
+
+          {/* Main Heading */}
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-purple-600 mb-16 max-w-4xl px-4">
+            <span className="text-purple-500">&ldquo;</span>
+            Intelligence Means Business
+            <span className="text-purple-500">&rdquo;</span>
+          </h1>
+
+          {/* CTA Button */}
+          <Button
+            onClick={() => user ? navigate('/Dashboard') : base44.auth.redirectToLogin()}
+            className="bg-purple-600 hover:bg-purple-700 text-white text-xl px-12 py-7 rounded-full shadow-lg shadow-purple-600/30 transition-all duration-300 hover:shadow-purple-600/50 hover:scale-105"
+          >
+            Start Here
+          </Button>
         </div>
 
         {/* Features Grid */}
