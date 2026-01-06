@@ -2,6 +2,8 @@ import Layout from "./Layout.jsx";
 
 import ActionList from "./ActionList";
 
+import Login from "./Login";
+
 import Admin from "./Admin";
 
 import Affiliate from "./Affiliate";
@@ -31,6 +33,8 @@ import Terms from "./Terms";
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 
 const PAGES = {
+    
+    Login: Login,
     
     ActionList: ActionList,
     
@@ -85,6 +89,8 @@ function PagesContent() {
             <Routes>            
                 
                     <Route path="/" element={<ActionList />} />
+                
+                <Route path="/Login" element={<Login />} />
                 
                 
                 <Route path="/ActionList" element={<ActionList />} />
