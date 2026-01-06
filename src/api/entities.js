@@ -59,3 +59,14 @@ export const ModelFavorite = base44.entities.ModelFavorite;
 
 // auth sdk:
 export const User = base44.auth;
+
+// Authentication entities
+// Note: User entity should be defined in Base44 with fields:
+// email, password_hash, google_id, name, profile_picture, email_verified, is_active, 
+// last_login_at, failed_login_attempts, locked_until
+export const UserEntity = base44.entities.User;
+
+// Session entity for token management
+// Note: Session entity should be defined in Base44 with fields:
+// user_id, token, ip_address, user_agent, expires_at, is_active, revoked_at
+export const Session = base44.entities.Session;

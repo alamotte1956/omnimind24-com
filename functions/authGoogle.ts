@@ -3,17 +3,21 @@
  * 
  * This function handles the Google OAuth authentication flow:
  * 1. Receives OAuth authorization code or credential from Google
- * 2. Exchanges it for access token
+ * 2. Verifies token using google-auth-library
  * 3. Fetches user profile from Google
- * 4. Creates or updates user in database
+ * 4. Creates or updates user in database using Base44 entities
  * 5. Generates session token
  * 
  * Security Features:
- * - Token validation
+ * - Token validation using google-auth-library
  * - CSRF protection
  * - Secure user creation/lookup
  * - Session management
  */
+
+import { OAuth2Client } from 'npm:google-auth-library@9.6.0';
+import { createClientFromRequest } from 'npm:@base44/sdk@0.8.6';
+import jwt from 'npm:jsonwebtoken@9.0.2';
 
 interface GoogleAuthRequest {
   credential?: string; // Google ID token (from Google Sign-In)
@@ -46,51 +50,57 @@ interface AuthResponse {
 }
 
 /**
- * Decode and verify Google ID token
- * In production, use google-auth-library for proper verification
+ * Verify Google ID token using google-auth-library
  */
-function decodeGoogleToken(credential: string): GoogleUserProfile | null {
+async function verifyGoogleToken(
+  credential: string, 
+  clientId: string
+): Promise<GoogleUserProfile | null> {
   try {
-    // Split JWT token
-    const parts = credential.split('.');
-    if (parts.length !== 3) return null;
+    const client = new OAuth2Client(clientId);
+    const ticket = await client.verifyIdToken({
+      idToken: credential,
+      audience: clientId,
+    });
+    
+    const payload = ticket.getPayload();
+    if (!payload || !payload.sub || !payload.email) {
+      return null;
+    }
 
-    // Decode payload (base64url)
-    const payload = parts[1];
-    const decodedPayload = Buffer.from(payload, 'base64').toString('utf-8');
-    const userProfile: GoogleUserProfile = JSON.parse(decodedPayload);
-
-    // Basic validation
-    if (!userProfile.sub || !userProfile.email) return null;
-
-    return userProfile;
+    return {
+      sub: payload.sub,
+      email: payload.email,
+      email_verified: payload.email_verified || false,
+      name: payload.name || '',
+      picture: payload.picture,
+      given_name: payload.given_name,
+      family_name: payload.family_name,
+    };
   } catch (error) {
-    console.error('Token decode error:', error);
+    console.error('Token verification error:', error);
     return null;
   }
 }
 
 /**
- * Exchange authorization code for access token
+ * Exchange authorization code for access token and verify
  */
-async function exchangeCodeForToken(code: string): Promise<GoogleUserProfile | null> {
+async function exchangeCodeForToken(
+  code: string, 
+  clientId: string, 
+  clientSecret: string, 
+  redirectUri: string
+): Promise<GoogleUserProfile | null> {
   try {
-    // In production, implement the OAuth2 token exchange
-    // const response = await fetch('https://oauth2.googleapis.com/token', {
-    //   method: 'POST',
-    //   headers: { 'Content-Type': 'application/json' },
-    //   body: JSON.stringify({
-    //     code,
-    //     client_id: process.env.GOOGLE_CLIENT_ID,
-    //     client_secret: process.env.GOOGLE_CLIENT_SECRET,
-    //     redirect_uri: process.env.GOOGLE_REDIRECT_URI,
-    //     grant_type: 'authorization_code'
-    //   })
-    // });
-    // const data = await response.json();
-    // return decodeGoogleToken(data.id_token);
+    const client = new OAuth2Client(clientId, clientSecret, redirectUri);
+    const { tokens } = await client.getToken(code);
     
-    return null; // Placeholder
+    if (!tokens.id_token) {
+      return null;
+    }
+    
+    return await verifyGoogleToken(tokens.id_token, clientId);
   } catch (error) {
     console.error('Token exchange error:', error);
     return null;
@@ -98,142 +108,184 @@ async function exchangeCodeForToken(code: string): Promise<GoogleUserProfile | n
 }
 
 /**
- * Create or update user from Google profile
+ * Create or update user from Google profile using Base44 entities
  */
-async function findOrCreateUser(googleProfile: GoogleUserProfile): Promise<any> {
-  // TODO: Implement database operations
-  // Check if user exists by google_id
-  // const existingUser = await db.users.findOne({ google_id: googleProfile.sub });
-  
-  // If not, check by email
-  // if (!existingUser) {
-  //   existingUser = await db.users.findOne({ email: googleProfile.email });
-  // }
-  
-  // Create new user if doesn't exist
-  // if (!existingUser) {
-  //   const newUser = await db.users.insert({
-  //     email: googleProfile.email,
-  //     name: googleProfile.name,
-  //     google_id: googleProfile.sub,
-  //     profile_picture: googleProfile.picture,
-  //     email_verified: googleProfile.email_verified,
-  //     is_active: true,
-  //     created_at: new Date(),
-  //     updated_at: new Date()
-  //   });
-  //   return newUser;
-  // }
-  
-  // Update existing user with Google info
-  // await db.users.update(
-  //   { id: existingUser.id },
-  //   { 
-  //     google_id: googleProfile.sub,
-  //     profile_picture: googleProfile.picture,
-  //     email_verified: googleProfile.email_verified,
-  //     updated_at: new Date()
-  //   }
-  // );
-  
-  // Placeholder return
-  return {
-    id: 'user_' + googleProfile.sub,
-    email: googleProfile.email,
-    name: googleProfile.name,
-    google_id: googleProfile.sub,
-    profile_picture: googleProfile.picture,
-    email_verified: googleProfile.email_verified,
-    is_active: true
-  };
-}
-
-/**
- * Generate JWT token
- */
-function generateToken(userId: string, email: string, expiresIn: number = 86400): string {
-  // In production, use a proper JWT library
-  const header = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString('base64');
-  const payload = Buffer.from(JSON.stringify({
-    sub: userId,
-    email,
-    iat: Math.floor(Date.now() / 1000),
-    exp: Math.floor(Date.now() / 1000) + expiresIn
-  })).toString('base64');
-  
-  return `${header}.${payload}.signature_placeholder`;
-}
-
-/**
- * Main handler function
- */
-export default async function handler(request: any, response: any) {
+async function findOrCreateUser(
+  base44Client: any, 
+  googleProfile: GoogleUserProfile
+): Promise<any> {
   try {
-    const { credential, code, state }: GoogleAuthRequest = request.body || {};
+    // Check if user exists by google_id
+    const usersByGoogleId = await base44Client.entities.User.filter({
+      google_id: googleProfile.sub,
+    });
+    
+    if (usersByGoogleId && usersByGoogleId.length > 0) {
+      const existingUser = usersByGoogleId[0];
+      // Update existing user with latest Google info
+      await base44Client.entities.User.update(existingUser.id, {
+        profile_picture: googleProfile.picture,
+        email_verified: googleProfile.email_verified,
+        last_login_at: new Date().toISOString(),
+      });
+      return existingUser;
+    }
+    
+    // Check if user exists by email
+    const usersByEmail = await base44Client.entities.User.filter({
+      email: googleProfile.email,
+    });
+    
+    if (usersByEmail && usersByEmail.length > 0) {
+      const existingUser = usersByEmail[0];
+      // Link Google account to existing user
+      await base44Client.entities.User.update(existingUser.id, {
+        google_id: googleProfile.sub,
+        profile_picture: googleProfile.picture,
+        email_verified: googleProfile.email_verified,
+        last_login_at: new Date().toISOString(),
+      });
+      return existingUser;
+    }
+    
+    // Create new user
+    const newUser = await base44Client.entities.User.create({
+      email: googleProfile.email,
+      name: googleProfile.name,
+      google_id: googleProfile.sub,
+      profile_picture: googleProfile.picture,
+      email_verified: googleProfile.email_verified,
+      is_active: true,
+      last_login_at: new Date().toISOString(),
+      failed_login_attempts: 0,
+    });
+    
+    return newUser;
+  } catch (error) {
+    console.error('Error finding or creating user:', error);
+    throw error;
+  }
+}
 
-    // Validate CSRF token if present
-    // if (state && !validateCSRFToken(state)) {
-    //   return response.status(403).json({
-    //     success: false,
-    //     error: 'Invalid state parameter'
-    //   } as AuthResponse);
-    // }
+/**
+ * Generate JWT token with proper signing
+ */
+function generateToken(
+  userId: string, 
+  email: string, 
+  secret: string, 
+  expiresIn: number = 86400
+): string {
+  return jwt.sign(
+    {
+      sub: userId,
+      email,
+      iat: Math.floor(Date.now() / 1000),
+      exp: Math.floor(Date.now() / 1000) + expiresIn,
+    },
+    secret,
+    { algorithm: 'HS256' }
+  );
+}
+
+/**
+ * Main Deno handler function
+ */
+Deno.serve(async (req) => {
+  try {
+    const base44 = createClientFromRequest(req);
+    const { credential, code, state }: GoogleAuthRequest = await req.json();
+
+    // Get environment variables
+    const googleClientId = Deno.env.get('GOOGLE_CLIENT_ID');
+    const googleClientSecret = Deno.env.get('GOOGLE_CLIENT_SECRET');
+    const googleRedirectUri = Deno.env.get('GOOGLE_REDIRECT_URI');
+    const jwtSecret = Deno.env.get('JWT_SECRET') || 'default-secret-change-in-production';
+
+    if (!googleClientId) {
+      return Response.json({
+        success: false,
+        error: 'Google OAuth not configured'
+      } as AuthResponse, { status: 500 });
+    }
 
     let googleProfile: GoogleUserProfile | null = null;
 
     // Handle Google Sign-In credential (ID token)
     if (credential) {
-      googleProfile = decodeGoogleToken(credential);
+      googleProfile = await verifyGoogleToken(credential, googleClientId);
     }
     // Handle OAuth authorization code flow
     else if (code) {
-      googleProfile = await exchangeCodeForToken(code);
+      if (!googleClientSecret || !googleRedirectUri) {
+        return Response.json({
+          success: false,
+          error: 'Google OAuth not fully configured'
+        } as AuthResponse, { status: 500 });
+      }
+      googleProfile = await exchangeCodeForToken(code, googleClientId, googleClientSecret, googleRedirectUri);
     }
     else {
-      return response.status(400).json({
+      return Response.json({
         success: false,
         error: 'Missing credential or authorization code'
-      } as AuthResponse);
+      } as AuthResponse, { status: 400 });
     }
 
     if (!googleProfile) {
-      return response.status(400).json({
+      return Response.json({
         success: false,
         error: 'Invalid Google credential'
-      } as AuthResponse);
+      } as AuthResponse, { status: 400 });
     }
 
     // Verify email is verified by Google
     if (!googleProfile.email_verified) {
-      return response.status(400).json({
+      return Response.json({
         success: false,
         error: 'Email not verified by Google'
-      } as AuthResponse);
+      } as AuthResponse, { status: 400 });
     }
 
     // Find or create user
-    const user = await findOrCreateUser(googleProfile);
+    const user = await findOrCreateUser(base44, googleProfile);
 
     // Check if user is active
     if (!user.is_active) {
-      return response.status(403).json({
+      return Response.json({
         success: false,
         error: 'Account is inactive'
-      } as AuthResponse);
+      } as AuthResponse, { status: 403 });
     }
 
     // Generate session token
     const expiresIn = 24 * 60 * 60; // 24 hours
-    const token = generateToken(user.id, user.email, expiresIn);
+    const token = generateToken(user.id, user.email, jwtSecret, expiresIn);
 
-    // Set secure cookie
-    response.setHeader('Set-Cookie', [
+    // Store session in database
+    try {
+      await base44.entities.Session.create({
+        user_id: user.id,
+        token: token,
+        ip_address: req.headers.get('x-forwarded-for') || 'unknown',
+        user_agent: req.headers.get('user-agent') || '',
+        expires_at: new Date(Date.now() + expiresIn * 1000).toISOString(),
+        is_active: true,
+      });
+    } catch (sessionError) {
+      console.error('Failed to create session:', sessionError);
+      // Continue even if session storage fails
+    }
+
+    // Return success response with headers
+    const headers = new Headers();
+    headers.set('Content-Type', 'application/json');
+    headers.set('Set-Cookie', [
       `auth_token=${token}; HttpOnly; Secure; SameSite=Strict; Max-Age=${expiresIn}; Path=/`,
       `user_id=${user.id}; Secure; SameSite=Strict; Max-Age=${expiresIn}; Path=/`
-    ]);
+    ].join(', '));
 
-    // Return success response
-    return response.json({
+    return new Response(JSON.stringify({
       success: true,
       token,
       user: {
@@ -244,13 +296,16 @@ export default async function handler(request: any, response: any) {
         google_id: user.google_id
       },
       expiresIn
-    } as AuthResponse);
+    } as AuthResponse), {
+      status: 200,
+      headers
+    });
 
   } catch (error) {
     console.error('Google auth error:', error);
-    return response.status(500).json({
+    return Response.json({
       success: false,
       error: 'Internal server error'
-    } as AuthResponse);
+    } as AuthResponse, { status: 500 });
   }
-}
+});

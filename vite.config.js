@@ -70,14 +70,14 @@ export default defineConfig({
     },
   },
   build: {
-    // Generate source maps for production debugging (disable in production if not needed)
-    sourcemap: false,
+    // Generate source maps for production error tracking with Sentry
+    sourcemap: import.meta.env.VITE_SENTRY_DSN ? true : false,
     // Minify output
     minify: 'terser',
     terserOptions: {
       compress: {
-        // Remove console.log in production
-        drop_console: true,
+        // Remove console.log in production unless Sentry is enabled (for fallback logging)
+        drop_console: !import.meta.env.VITE_SENTRY_DSN,
         drop_debugger: true
       }
     },
