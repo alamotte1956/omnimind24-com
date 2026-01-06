@@ -2,7 +2,7 @@ import Layout from "./Layout.jsx";
 
 import ActionList from "./ActionList";
 
-import Login from "./Login";
+import Login from "./LoginEnhanced";
 
 import Admin from "./Admin";
 
