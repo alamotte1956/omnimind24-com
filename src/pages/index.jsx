@@ -30,6 +30,8 @@ import TemplateLibrary from "./TemplateLibrary";
 
 import Terms from "./Terms";
 
+import Pricing from "./Pricing";
+
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 
 const PAGES = {
@@ -63,6 +65,8 @@ const PAGES = {
     TemplateLibrary: TemplateLibrary,
     
     Terms: Terms,
+    
+    Pricing: Pricing,
     
 }
 
@@ -120,6 +124,8 @@ function PagesContent() {
                 <Route path="/TemplateLibrary" element={<TemplateLibrary />} />
                 
                 <Route path="/Terms" element={<Terms />} />
+                
+                <Route path="/Pricing" element={<Pricing />} />
                 
             </Routes>
         </Layout>

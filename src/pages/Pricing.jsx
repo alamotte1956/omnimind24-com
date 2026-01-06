@@ -5,6 +5,7 @@ import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Check, Zap, Crown, Sparkles, CreditCard } from 'lucide-react';
 import AuthGuard from '../components/AuthGuard';
 
@@ -134,7 +135,6 @@ const HYBRID_PLANS = [
 
 export default function Pricing() {
   const navigate = useNavigate();
-  const [billingCycle, setBillingCycle] = useState('monthly');
 
   const { data: user } = useQuery({
     queryKey: ['user'],
@@ -154,253 +154,268 @@ export default function Pricing() {
       <div className="min-h-screen bg-[#0D0D0D] p-8">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
-          <div className="text-center mb-12">
+          <div className="text-center mb-8">
             <h1 className="text-5xl font-bold text-white mb-4">
               Flexible Pricing for Every Need
             </h1>
             <p className="text-xl text-gray-400 mb-6">
-              Choose a subscription plan or buy credits as you go
+              Choose the pricing model that works best for you
             </p>
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-600/20 rounded-full">
-              <Sparkles className="w-4 h-4 text-purple-400" />
-              <span className="text-purple-300 text-sm">Hybrid pricing: Subscribe + Pay-as-you-go</span>
-            </div>
           </div>
 
-          {/* Hybrid Plans - RECOMMENDED */}
-          <div className="mb-16">
-            <div className="text-center mb-8">
-              <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full mb-4">
-                <Crown className="w-5 h-5 text-white" />
-                <span className="text-white font-bold text-lg">Recommended: Hybrid Plans</span>
-                <Crown className="w-5 h-5 text-white" />
+          {/* Pricing Mode Tabs */}
+          <Tabs defaultValue="hybrid" className="w-full">
+            <div className="flex justify-center mb-12">
+              <TabsList className="bg-[#1A1A1A] border border-gray-800 p-1">
+                <TabsTrigger 
+                  value="subscription" 
+                  className="data-[state=active]:bg-purple-600 data-[state=active]:text-white px-6 py-2"
+                >
+                  <Zap className="w-4 h-4 mr-2" />
+                  Subscription Plans
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="hybrid" 
+                  className="data-[state=active]:bg-purple-600 data-[state=active]:text-white px-6 py-2"
+                >
+                  <Crown className="w-4 h-4 mr-2" />
+                  Hybrid Plans
+                  <Badge className="ml-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white text-xs">
+                    Recommended
+                  </Badge>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="credits" 
+                  className="data-[state=active]:bg-purple-600 data-[state=active]:text-white px-6 py-2"
+                >
+                  <CreditCard className="w-4 h-4 mr-2" />
+                  Pay-as-you-go
+                </TabsTrigger>
+              </TabsList>
+            </div>
+
+            {/* Subscription Plans Tab */}
+            <TabsContent value="subscription">
+              <div className="mb-16">
+                <div className="text-center mb-8">
+                  <h2 className="text-3xl font-bold text-white mb-2">Standard Subscription Plans</h2>
+                  <p className="text-gray-400 text-lg">Get monthly credits at discounted rates</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {SUBSCRIPTION_PLANS.map((plan) => {
+                    const Icon = plan.icon;
+                    return (
+                      <Card
+                        key={plan.name}
+                        className={`bg-[#1A1A1A] border-2 ${
+                          plan.popular ? 'border-purple-500 shadow-lg shadow-purple-500/50' : 'border-gray-800'
+                        } hover:border-purple-500 transition-all relative transform hover:scale-105`}
+                      >
+                        {plan.popular && (
+                          <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                            <Badge className="bg-purple-600 text-white px-4 py-1">⭐ Most Popular</Badge>
+                          </div>
+                        )}
+                        <CardHeader className="text-center pb-4">
+                          <div className={`w-16 h-16 rounded-full bg-${plan.color}-600/20 flex items-center justify-center mx-auto mb-4`}>
+                            <Icon className={`w-8 h-8 text-${plan.color}-400`} />
+                          </div>
+                          <CardTitle className="text-white text-2xl">{plan.name}</CardTitle>
+                          <div className="mt-4">
+                            <span className="text-5xl font-bold text-white">${plan.price}</span>
+                            <span className="text-gray-400">/month</span>
+                          </div>
+                          <CardDescription className="text-purple-400 font-semibold mt-2">
+                            {plan.credits} credits included
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <ul className="space-y-3 mb-6">
+                            {plan.features.map((feature, idx) => (
+                              <li key={idx} className="flex items-start gap-2 text-gray-300">
+                                <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                                <span className="text-sm">{feature}</span>
+                              </li>
+                            ))}
+                          </ul>
+                          <Button
+                            onClick={() => handleSubscribe(plan)}
+                            className={`w-full ${
+                              plan.popular
+                                ? 'bg-purple-600 hover:bg-purple-700'
+                                : 'bg-gray-700 hover:bg-gray-600'
+                            }`}
+                          >
+                            Get Started
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+
+                <div className="text-center mt-8">
+                  <p className="text-gray-400 text-sm">
+                    💡 Unused credits roll over to the next month • Cancel anytime
+                  </p>
+                </div>
               </div>
-              <h2 className="text-3xl font-bold text-white mb-2">Hybrid Pricing Plans</h2>
-              <p className="text-gray-400 text-lg">Best value - Monthly credits + Discounted pay-as-you-go purchases</p>
-            </div>
+            </TabsContent>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-              {HYBRID_PLANS.map((plan) => {
-                const Icon = plan.icon;
-                const gradientColors = {
-                  purple: 'from-purple-600 to-purple-800',
-                  blue: 'from-blue-600 to-blue-800',
-                  green: 'from-green-600 to-green-800'
-                };
-                const bgColors = {
-                  purple: 'bg-purple-600',
-                  blue: 'bg-blue-600',
-                  green: 'bg-green-600'
-                };
-                return (
-                  <Card
-                    key={plan.name}
-                    className={`bg-gradient-to-br from-[#1A1A1A] to-[#0D0D0D] border-2 ${
-                      plan.popular ? 'border-purple-500 shadow-lg shadow-purple-500/50' : 'border-gray-800'
-                    } hover:border-purple-500 transition-all relative transform hover:scale-105`}
-                  >
-                    {plan.popular && (
-                      <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                        <Badge className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-1 text-sm">
-                          ⭐ Most Popular
-                        </Badge>
-                      </div>
-                    )}
-                    <CardHeader className="text-center pb-4">
-                      <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${gradientColors[plan.color]} flex items-center justify-center mx-auto mb-4 shadow-lg`}>
-                        <Icon className={`w-8 h-8 text-white`} />
-                      </div>
-                      <CardTitle className="text-white text-2xl">{plan.name}</CardTitle>
-                      <div className="mt-4">
-                        <span className="text-5xl font-bold text-white">${plan.price}</span>
-                        <span className="text-gray-400">/month</span>
-                      </div>
-                      <div className="mt-2 space-y-1">
-                        <CardDescription className="text-purple-400 font-semibold">
-                          {plan.credits} credits/month
-                        </CardDescription>
-                        <Badge className="bg-green-600 text-white">
-                          +{plan.bonusCredits} bonus credits
-                        </Badge>
-                        <div className="text-yellow-400 font-bold text-sm mt-2">
-                          🎯 {plan.discount}% off extra credits
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <ul className="space-y-3 mb-6">
-                        {plan.features.map((feature, idx) => (
-                          <li key={idx} className="flex items-start gap-2 text-gray-300">
-                            <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                            <span className="text-sm">{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
-                      <Button
-                        onClick={() => handleSubscribe(plan)}
-                        className={`w-full ${
-                          plan.popular
-                            ? 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700'
-                            : 'bg-gray-700 hover:bg-gray-600'
-                        } font-bold`}
+            {/* Hybrid Plans Tab */}
+            <TabsContent value="hybrid">
+              <div className="mb-16">
+                <div className="text-center mb-8">
+                  <div className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-full mb-4">
+                    <Crown className="w-5 h-5 text-white" />
+                    <span className="text-white font-bold text-lg">Recommended: Hybrid Plans</span>
+                    <Crown className="w-5 h-5 text-white" />
+                  </div>
+                  <h2 className="text-3xl font-bold text-white mb-2">Hybrid Pricing Plans</h2>
+                  <p className="text-gray-400 text-lg">Best value - Monthly credits + Discounted pay-as-you-go purchases</p>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                  {HYBRID_PLANS.map((plan) => {
+                    const Icon = plan.icon;
+                    const gradientColors = {
+                      purple: 'from-purple-600 to-purple-800',
+                      blue: 'from-blue-600 to-blue-800',
+                      green: 'from-green-600 to-green-800'
+                    };
+                    return (
+                      <Card
+                        key={plan.name}
+                        className={`bg-gradient-to-br from-[#1A1A1A] to-[#0D0D0D] border-2 ${
+                          plan.popular ? 'border-purple-500 shadow-lg shadow-purple-500/50' : 'border-gray-800'
+                        } hover:border-purple-500 transition-all relative transform hover:scale-105`}
                       >
-                        Get Started
-                      </Button>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
+                        {plan.popular && (
+                          <div className="absolute -top-4 left-1/2 -translate-x-1/2">
+                            <Badge className="bg-gradient-to-r from-purple-600 to-blue-600 text-white px-4 py-1 text-sm">
+                              ⭐ Most Popular
+                            </Badge>
+                          </div>
+                        )}
+                        <CardHeader className="text-center pb-4">
+                          <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${gradientColors[plan.color]} flex items-center justify-center mx-auto mb-4 shadow-lg`}>
+                            <Icon className={`w-8 h-8 text-white`} />
+                          </div>
+                          <CardTitle className="text-white text-2xl">{plan.name}</CardTitle>
+                          <div className="mt-4">
+                            <span className="text-5xl font-bold text-white">${plan.price}</span>
+                            <span className="text-gray-400">/month</span>
+                          </div>
+                          <div className="mt-2 space-y-1">
+                            <CardDescription className="text-purple-400 font-semibold">
+                              {plan.credits} credits/month
+                            </CardDescription>
+                            <Badge className="bg-green-600 text-white">
+                              +{plan.bonusCredits} bonus credits
+                            </Badge>
+                            <div className="text-yellow-400 font-bold text-sm mt-2">
+                              🎯 {plan.discount}% off extra credits
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <ul className="space-y-3 mb-6">
+                            {plan.features.map((feature, idx) => (
+                              <li key={idx} className="flex items-start gap-2 text-gray-300">
+                                <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
+                                <span className="text-sm">{feature}</span>
+                              </li>
+                            ))}
+                          </ul>
+                          <Button
+                            onClick={() => handleSubscribe(plan)}
+                            className={`w-full ${
+                              plan.popular
+                                ? 'bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700'
+                                : 'bg-gray-700 hover:bg-gray-600'
+                            } font-bold`}
+                          >
+                            Get Started
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
 
-            <div className="text-center">
-              <p className="text-gray-400 text-sm">
-                💡 Perfect for growing businesses • Best price per credit • Combine subscription + pay-as-you-go flexibility
-              </p>
-            </div>
-          </div>
+                <div className="text-center">
+                  <p className="text-gray-400 text-sm">
+                    💡 Perfect for growing businesses • Best price per credit • Combine subscription + pay-as-you-go flexibility
+                  </p>
+                </div>
+              </div>
+            </TabsContent>
 
-          {/* Divider */}
-          <div className="flex items-center gap-4 mb-16">
-            <div className="flex-1 h-px bg-gray-800" />
-            <span className="text-gray-500 font-semibold">OR CHOOSE</span>
-            <div className="flex-1 h-px bg-gray-800" />
-          </div>
+            {/* Pay-as-you-go Credits Tab */}
+            <TabsContent value="credits">
+              <div className="mb-16">
+                <div className="text-center mb-8">
+                  <h2 className="text-3xl font-bold text-white mb-2">Pay-as-you-go Credits</h2>
+                  <p className="text-gray-400 text-lg">Buy credits only when you need them - no monthly commitment</p>
+                </div>
 
-          {/* Subscription Plans */}
-          <div className="mb-16">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-white mb-2">Standard Subscription Plans</h2>
-              <p className="text-gray-400">Get monthly credits at discounted rates</p>
-            </div>
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                  {CREDIT_PACKAGES.map((pkg) => {
+                    const totalCredits = pkg.amount + pkg.bonus;
+                    const pricePerCredit = (pkg.price / totalCredits).toFixed(3);
+                    const savingsPercent = pkg.bonus > 0 ? Math.round((pkg.bonus / pkg.amount) * 100) : 0;
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {SUBSCRIPTION_PLANS.map((plan) => {
-                const Icon = plan.icon;
-                return (
-                  <Card
-                    key={plan.name}
-                    className={`bg-[#1A1A1A] border-2 ${
-                      plan.popular ? 'border-purple-500' : 'border-gray-800'
-                    } hover:border-purple-500 transition-all relative`}
-                  >
-                    {plan.popular && (
-                      <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-                        <Badge className="bg-purple-600 text-white">Most Popular</Badge>
-                      </div>
-                    )}
-                    <CardHeader className="text-center pb-4">
-                      <div className={`w-16 h-16 rounded-full bg-${plan.color}-600/20 flex items-center justify-center mx-auto mb-4`}>
-                        <Icon className={`w-8 h-8 text-${plan.color}-400`} />
-                      </div>
-                      <CardTitle className="text-white text-2xl">{plan.name}</CardTitle>
-                      <div className="mt-4">
-                        <span className="text-5xl font-bold text-white">${plan.price}</span>
-                        <span className="text-gray-400">/month</span>
-                      </div>
-                      <CardDescription className="text-purple-400 font-semibold mt-2">
-                        {plan.credits} credits included
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <ul className="space-y-3 mb-6">
-                        {plan.features.map((feature, idx) => (
-                          <li key={idx} className="flex items-start gap-2 text-gray-300">
-                            <Check className="w-5 h-5 text-green-400 flex-shrink-0 mt-0.5" />
-                            <span className="text-sm">{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
-                      <Button
-                        onClick={() => handleSubscribe(plan)}
-                        className={`w-full ${
-                          plan.popular
-                            ? 'bg-purple-600 hover:bg-purple-700'
-                            : 'bg-gray-700 hover:bg-gray-600'
-                        }`}
+                    return (
+                      <Card
+                        key={pkg.amount}
+                        className="bg-[#1A1A1A] border-gray-800 hover:border-purple-500 transition-all"
                       >
-                        Get Started
-                      </Button>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
+                        <CardHeader className="text-center pb-3">
+                          {pkg.bonus > 0 && (
+                            <Badge className="bg-green-600 text-white mb-2 mx-auto">
+                              +{savingsPercent}% Bonus
+                            </Badge>
+                          )}
+                          <div className="text-4xl font-bold text-white mb-1">
+                            {totalCredits}
+                          </div>
+                          <CardDescription className="text-gray-400">credits</CardDescription>
+                          {pkg.bonus > 0 && (
+                            <div className="text-xs text-green-400 mt-1">
+                              ({pkg.amount} + {pkg.bonus} bonus)
+                            </div>
+                          )}
+                        </CardHeader>
+                        <CardContent className="text-center">
+                          <div className="mb-4">
+                            <span className="text-3xl font-bold text-white">${pkg.price}</span>
+                          </div>
+                          <div className="text-xs text-gray-500 mb-4">
+                            ${pricePerCredit} per credit
+                          </div>
+                          <Button
+                            onClick={() => handleBuyCredits(pkg)}
+                            className="w-full bg-purple-600 hover:bg-purple-700"
+                            size="sm"
+                          >
+                            <CreditCard className="w-4 h-4 mr-2" />
+                            Buy Now
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
 
-            <div className="text-center mt-8">
-              <p className="text-gray-400 text-sm">
-                💡 Unused credits roll over to the next month • Cancel anytime
-              </p>
-            </div>
-          </div>
-
-          {/* Divider */}
-          <div className="flex items-center gap-4 mb-16">
-            <div className="flex-1 h-px bg-gray-800" />
-            <span className="text-gray-500 font-semibold">OR</span>
-            <div className="flex-1 h-px bg-gray-800" />
-          </div>
-
-          {/* Pay-as-you-go Credits */}
-          <div className="mb-16">
-            <div className="text-center mb-8">
-              <h2 className="text-3xl font-bold text-white mb-2">Pay-as-you-go Credits</h2>
-              <p className="text-gray-400">Buy credits only when you need them - no monthly commitment</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-              {CREDIT_PACKAGES.map((pkg) => {
-                const totalCredits = pkg.amount + pkg.bonus;
-                const pricePerCredit = (pkg.price / totalCredits).toFixed(3);
-                const savingsPercent = pkg.bonus > 0 ? Math.round((pkg.bonus / pkg.amount) * 100) : 0;
-
-                return (
-                  <Card
-                    key={pkg.amount}
-                    className="bg-[#1A1A1A] border-gray-800 hover:border-purple-500 transition-all"
-                  >
-                    <CardHeader className="text-center pb-3">
-                      {pkg.bonus > 0 && (
-                        <Badge className="bg-green-600 text-white mb-2 mx-auto">
-                          +{savingsPercent}% Bonus
-                        </Badge>
-                      )}
-                      <div className="text-4xl font-bold text-white mb-1">
-                        {totalCredits}
-                      </div>
-                      <CardDescription className="text-gray-400">credits</CardDescription>
-                      {pkg.bonus > 0 && (
-                        <div className="text-xs text-green-400 mt-1">
-                          ({pkg.amount} + {pkg.bonus} bonus)
-                        </div>
-                      )}
-                    </CardHeader>
-                    <CardContent className="text-center">
-                      <div className="mb-4">
-                        <span className="text-3xl font-bold text-white">${pkg.price}</span>
-                      </div>
-                      <div className="text-xs text-gray-500 mb-4">
-                        ${pricePerCredit} per credit
-                      </div>
-                      <Button
-                        onClick={() => handleBuyCredits(pkg)}
-                        className="w-full bg-purple-600 hover:bg-purple-700"
-                        size="sm"
-                      >
-                        <CreditCard className="w-4 h-4 mr-2" />
-                        Buy Now
-                      </Button>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-
-            <div className="text-center mt-8">
-              <p className="text-gray-400 text-sm">
-                💳 Credits never expire • Use them whenever you need
-              </p>
-            </div>
-          </div>
+                <div className="text-center mt-8">
+                  <p className="text-gray-400 text-sm">
+                    💳 Credits never expire • Use them whenever you need
+                  </p>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
 
           {/* Comparison Table */}
           <div className="mb-16">
