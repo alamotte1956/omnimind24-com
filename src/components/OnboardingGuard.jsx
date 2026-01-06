@@ -13,9 +13,11 @@ export default function OnboardingGuard({ children }) {
   });
 
   useEffect(() => {
-    if (!isLoading && user) {
-      // Everyone must complete COSTAR - no exceptions
-      if (!user.costar_completed) {
+    // In demo mode, skip onboarding redirect
+    // Demo users have costar_completed set or we skip the check
+    if (!isLoading && user && !user.costar_completed) {
+      // Only redirect if not in demo mode (demo user has id starting with 'demo')
+      if (!user.id?.startsWith('demo')) {
         navigate('/Onboarding');
       }
     }

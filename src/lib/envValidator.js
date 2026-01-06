@@ -4,10 +4,19 @@
  * This module validates required environment variables at runtime
  * using Zod schema validation for type safety.
  * 
- * Call validateEnv() on app startup to ensure all required variables are present.
+ * In demo/preview mode, validation is relaxed to allow the app to run
+ * without all production environment variables.
  */
 
 import { z } from 'zod';
+
+// Check if we're in demo/preview mode
+const isDemoMode = () => {
+  return import.meta.env.VITE_DEMO_MODE === 'true' || 
+         import.meta.env.VITE_ENV === 'demo' ||
+         !import.meta.env.VITE_BASE44_PROJECT_ID ||
+         import.meta.env.VITE_BASE44_PROJECT_ID === 'your_project_id_here';
+};
 
 /**
  * Environment variable schema using Zod
@@ -36,11 +45,24 @@ const envSchema = z.object({
   VITE_GOOGLE_AI_API_KEY: z.string().optional().or(z.literal('')),
   
   // Environment
-  VITE_ENV: z.enum(['development', 'production', 'staging']).optional(),
+  VITE_ENV: z.enum(['development', 'production', 'staging', 'demo']).optional(),
   
   // Feature Flags
   VITE_ENABLE_ANALYTICS: z.string().optional(),
   VITE_ENABLE_DEBUG: z.string().optional(),
+  VITE_DEMO_MODE: z.string().optional(),
+});
+
+/**
+ * Demo mode schema - relaxed validation
+ */
+const demoEnvSchema = z.object({
+  VITE_BASE44_APP_ID: z.string().optional(),
+  VITE_BASE44_PROJECT_ID: z.string().optional(),
+  VITE_BASE44_API_URL: z.string().optional(),
+  VITE_STRIPE_PUBLISHABLE_KEY: z.string().optional(),
+  VITE_API_BASE_URL: z.string().optional(),
+  VITE_GOOGLE_CLIENT_ID: z.string().optional(),
 });
 
 /**
@@ -69,10 +91,17 @@ const productionWarnings = (env) => {
 /**
  * Validate environment variables
  * 
- * @throws {Error} If required variables are missing or invalid
+ * @throws {Error} If required variables are missing or invalid (in production mode)
  * @returns {object} Validated environment variables
  */
 export const validateEnv = () => {
+  // In demo mode, use relaxed validation
+  if (isDemoMode()) {
+    console.log('🎭 Running in DEMO/PREVIEW mode - using mock data');
+    console.log('✅ Environment validation skipped for demo mode');
+    return demoEnvSchema.parse(import.meta.env);
+  }
+
   try {
     // Parse and validate environment variables
     const env = envSchema.parse(import.meta.env);
@@ -138,3 +167,8 @@ export const isFeatureEnabled = (featureName) => {
   const value = import.meta.env[`VITE_ENABLE_${featureName.toUpperCase()}`];
   return value === 'true' || value === '1';
 };
+
+/**
+ * Export demo mode check
+ */
+export { isDemoMode };

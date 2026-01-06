@@ -49,6 +49,7 @@ const securityHeadersPlugin = () => ({
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/omnimind24-com/',
   plugins: [
     react(),
     securityHeadersPlugin()

@@ -1,6 +1,7 @@
 {
   "name": "base44-app",
   "private": true,
+  "homepage": "https://alamotte1956.github.io/omnimind24-com",
   "version": "0.0.0",
   "type": "module",
   "scripts": {
@@ -8,6 +9,8 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "deploy": "gh-pages -d dist",
+    "predeploy": "npm run build",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
@@ -88,6 +91,7 @@
     "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.18",
+    "gh-pages": "^6.3.0",
     "globals": "^15.14.0",
     "google-auth-library": "^10.5.0",
     "jsdom": "^27.4.0",

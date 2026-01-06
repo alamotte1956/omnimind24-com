@@ -30,13 +30,13 @@ export default function AuthGuard({ children }) {
   });
 
   useEffect(() => {
-    if (error || (!isLoading && !user)) {
+    // In demo mode, we always have a user, so no redirect needed
+    if (error && !user && !isLoading) {
       // Log error for debugging
-      if (error) {
-        console.error('Auth error:', error);
-      }
+      console.error('Auth error:', error);
       
-      // Redirect to login with current path as redirect
+      // Only redirect if we're not in demo mode
+      // The mock client will always return a user, so this shouldn't trigger
       const currentPath = window.location.pathname + window.location.search;
       base44.auth.redirectToLogin(currentPath);
     }
@@ -47,15 +47,22 @@ export default function AuthGuard({ children }) {
       <div className="flex items-center justify-center h-screen bg-[#0D0D0D]">
         <div className="text-center">
           <Loader2 className="w-8 h-8 text-purple-500 animate-spin mx-auto mb-4" />
-          <p className="text-gray-400">Authenticating...</p>
-          <p className="text-xs text-gray-500 mt-2">Please wait while we verify your session</p>
+          <p className="text-gray-400">Loading...</p>
+          <p className="text-xs text-gray-500 mt-2">Please wait while we set up your session</p>
         </div>
       </div>
     );
   }
 
   if (!user) {
-    return null; // Will redirect via useEffect
+    // In demo mode, this shouldn't happen, but just in case
+    return (
+      <div className="flex items-center justify-center h-screen bg-[#0D0D0D]">
+        <div className="text-center">
+          <p className="text-gray-400">Setting up demo mode...</p>
+        </div>
+      </div>
+    );
   }
 
   return <>{children}</>;

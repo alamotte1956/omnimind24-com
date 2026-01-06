@@ -2,7 +2,20 @@ import ReactDOM from 'react-dom/client'
 import App from '@/App.jsx'
 import '@/index.css'
 import { GoogleOAuthProvider } from '@react-oauth/google'
-import { validateEnv } from '@/lib/envValidator'
+import { validateEnv, isDemoMode } from '@/lib/envValidator'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+
+// Create a query client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      cacheTime: 10 * 60 * 1000, // 10 minutes
+      retry: 1,
+      refetchOnWindowFocus: false,
+    },
+  },
+});
 
 // Validate environment variables before starting the app
 try {
@@ -23,10 +36,18 @@ try {
   throw error;
 }
 
-const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || 'demo-client-id';
+
+// Show demo mode banner if applicable
+if (isDemoMode()) {
+  console.log('%c🎭 DEMO MODE ACTIVE', 'background: #9333EA; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold;');
+  console.log('This is a preview version with mock data. Some features may be limited.');
+}
 
 ReactDOM.createRoot(document.getElementById('root')).render(
+  <QueryClientProvider client={queryClient}>
     <GoogleOAuthProvider clientId={googleClientId}>
-        <App />
+      <App />
     </GoogleOAuthProvider>
-) 
+  </QueryClientProvider>
+)
