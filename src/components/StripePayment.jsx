@@ -12,8 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const STRIPE_KEY = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
 
-// Fail fast: do not initialize Stripe with a placeholder key.
-// If STRIPE_KEY is missing, stripePromise stays null and we show a clear UI message.
+// Only initialize Stripe if key is available
 const stripePromise = STRIPE_KEY ? loadStripe(STRIPE_KEY) : null;
 
 function CheckoutForm({ amount, price, onSuccess, onCancel }) {
@@ -105,29 +104,7 @@ export default function StripePayment({
   onCancel,
 }) {
   if (!stripePromise) {
-    return (
-      <Card className="bg-[#1A1A1A] border-gray-800 max-w-md mx-auto">
-        <CardHeader>
-          <CardTitle className="text-white text-center text-red-500">
-            Configuration Error
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <p className="text-gray-300 text-center">
-              Stripe publishable key is not configured.
-            </p>
-            <p className="text-sm text-gray-400 text-center">
-              Please add <code>VITE_STRIPE_PUBLISHABLE_KEY</code> to your
-              environment variables and reload the page.
-            </p>
-            <Button onClick={onCancel} variant="outline" className="w-full">
-              Go Back
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    );
+    return null; // Silently skip Stripe if not configured
   }
 
   if (!clientSecret) {
