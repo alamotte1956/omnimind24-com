@@ -75,23 +75,32 @@ cp .env.example .env.local
 ```
 
 ### Environment Variables
+Required environment variables (see `.env.example` for full list):
+
 ```env
-# Base44 Configuration
-VITE_BASE44_APP_ID=6948a16137ff8a8e50ada4e6
+# Base44 Configuration (Required)
+VITE_BASE44_PROJECT_ID=your_project_id_here
 VITE_BASE44_API_URL=https://api.base44.com
 
-# Stripe Configuration
+# Stripe Configuration (Required)
 VITE_STRIPE_PUBLISHABLE_KEY=pk_live_...
-VITE_STRIPE_WEBHOOK_SECRET=whsec_...
 
-# AI Provider Keys
+# Google OAuth (Required)
+VITE_GOOGLE_CLIENT_ID=your_google_client_id_here.apps.googleusercontent.com
+
+# Error Logging & Monitoring (Optional for production)
+VITE_SENTRY_DSN=https://...@sentry.io/...
+
+# AI Provider Keys (Optional)
 VITE_OPENAI_API_KEY=sk_...
 VITE_ANTHROPIC_API_KEY=sk-ant-...
 VITE_GOOGLE_AI_API_KEY=...
 
-# Optional
+# Other Optional
 VITE_GOOGLE_ANALYTICS_ID=G-XXXXXXXXXX
 ```
+
+**Environment Validation**: The application validates all required environment variables at startup using Zod schema validation. If any required variables are missing, the app will display an error message and refuse to start.
 
 ## 🚀 Development
 
@@ -113,6 +122,59 @@ npm run preview
 ### Lint Code
 ```bash
 npm run lint
+```
+
+## 🧪 Testing
+
+### Run Tests
+```bash
+# Run tests in watch mode
+npm test
+
+# Run tests once
+npm run test:run
+
+# Run tests with coverage
+npm run test:coverage
+
+# Run tests with UI
+npm run test:ui
+```
+
+### Test Coverage
+The project includes comprehensive tests for:
+- **Input Sanitization**: XSS and injection prevention
+- **Error Handling**: Error categorization and sanitization
+- **Utility Functions**: Core functionality validation
+
+Current test coverage targets:
+- Lines: >50%
+- Functions: >50%
+- Branches: >50%
+- Statements: >50%
+
+### Writing Tests
+Tests are located in `__tests__` directories next to the files they test:
+```
+src/lib/__tests__/
+  ├── sanitizer.test.js
+  ├── errorHandler.test.js
+  └── setup.js
+```
+
+Example test:
+```javascript
+import { describe, it, expect } from 'vitest'
+import { sanitizeText } from '../sanitizer'
+
+describe('sanitizeText', () => {
+  it('should remove HTML tags', () => {
+    const input = '<p>Hello</p>'
+    const result = sanitizeText(input)
+    expect(result).not.toContain('<p>')
+    expect(result).toContain('Hello')
+  })
+})
 ```
 
 ## 🏗️ Project Structure
@@ -159,7 +221,7 @@ const cleanHTML = sanitize(htmlContent, { type: 'html', allowHTML: true });
 ```
 
 ### Error Handling
-Centralized error handling with sanitized messages:
+Centralized error handling with Sentry integration for production:
 
 ```javascript
 import { handleError, showErrorToast } from '@/lib/errorHandler';
@@ -171,6 +233,12 @@ try {
   showErrorToast(errorInfo);
 }
 ```
+
+**Production Error Tracking**: 
+- Errors are automatically sent to Sentry when `VITE_SENTRY_DSN` is configured
+- In development, errors are logged to the console
+- Error messages are sanitized to prevent information leakage
+- Source maps are enabled when Sentry is configured for better error tracking
 
 ### Performance Monitoring
 Built-in performance tracking for components:
@@ -277,20 +345,70 @@ await base44.from('templates').insert(newTemplate);
 
 ## 🚀 Deployment
 
+### Pre-deployment Checklist
+Before deploying to production:
+
+- [ ] All environment variables are set correctly
+- [ ] `VITE_SENTRY_DSN` is configured for error tracking
+- [ ] Stripe keys are production keys (not test keys)
+- [ ] Run tests: `npm run test:run`
+- [ ] Run linter: `npm run lint`
+- [ ] Build succeeds: `npm run build`
+- [ ] Preview build works: `npm run preview`
+
 ### Production Deployment
 1. Build the application:
 ```bash
 npm run build
 ```
 
-2. Deploy the `dist/` folder to your hosting provider
+2. The `dist/` folder contains the production-ready application
+
+3. Deploy to your hosting provider (Vercel, Netlify, Base44, etc.)
 
 ### Base44 Integration
 1. Connect your Base44 project to this frontend
 2. Configure environment variables in Base44
-3. Deploy and test the integration
+3. Set up authentication entities (User, Session)
+4. Deploy and test the integration
+
+### Authentication Setup
+The application requires the following Base44 entities to be configured:
+
+**User Entity**:
+- Fields: `email`, `password_hash`, `google_id`, `name`, `profile_picture`, `email_verified`, `is_active`, `last_login_at`, `failed_login_attempts`, `locked_until`
+
+**Session Entity**:
+- Fields: `user_id`, `token`, `ip_address`, `user_agent`, `expires_at`, `is_active`, `revoked_at`
+
+**RateLimitLog Entity** (already exists):
+- Used for API rate limiting
+
+See `DATABASE_SCHEMA.md` for detailed schema definitions.
 
 ## 📊 Monitoring
+
+### Error Logging & Monitoring
+The application integrates with Sentry for production error tracking:
+
+**Setup Sentry**:
+1. Create a Sentry account at https://sentry.io/
+2. Create a new project for your application
+3. Copy the DSN from your project settings
+4. Add `VITE_SENTRY_DSN=your-dsn-here` to your `.env` file
+5. Sentry will automatically:
+   - Capture all JavaScript errors
+   - Track performance metrics
+   - Record session replays on errors
+   - Send source maps for better stack traces
+
+**Configuration**:
+```javascript
+// Automatically initialized in errorHandler.js when VITE_SENTRY_DSN is set
+- Trace sample rate: 10% of transactions
+- Replay on error: 100% of sessions with errors
+- Replay sample rate: 10% of normal sessions
+```
 
 ### Performance Monitoring
 The app includes built-in performance monitoring:
@@ -301,8 +419,9 @@ The app includes built-in performance monitoring:
 ### Error Tracking
 Comprehensive error handling and logging:
 - Sanitized error messages
-- Error categorization
+- Error categorization (Network, Auth, Validation, Server)
 - Performance impact tracking
+- Production errors sent to Sentry
 
 ## 🤝 Contributing
 
