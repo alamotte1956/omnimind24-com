@@ -1,16 +1,14 @@
-import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, MessageSquare, Brain, TrendingUp, Download, Sparkles, FileDown, Trash2 } from 'lucide-react';
+import { FileText, Brain, TrendingUp, Download, FileDown, Trash2 } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { createPageUrl } from '../utils';
 import AuthGuard from '../components/AuthGuard';
 import OnboardingGuard from '../components/OnboardingGuard';
 import OnboardingWelcome from '../components/OnboardingWelcome';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
 
 export default function Dashboard() {
