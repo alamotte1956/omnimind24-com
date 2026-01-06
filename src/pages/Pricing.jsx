@@ -182,6 +182,16 @@ export default function Pricing() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
               {HYBRID_PLANS.map((plan) => {
                 const Icon = plan.icon;
+                const gradientColors = {
+                  purple: 'from-purple-600 to-purple-800',
+                  blue: 'from-blue-600 to-blue-800',
+                  green: 'from-green-600 to-green-800'
+                };
+                const bgColors = {
+                  purple: 'bg-purple-600',
+                  blue: 'bg-blue-600',
+                  green: 'bg-green-600'
+                };
                 return (
                   <Card
                     key={plan.name}
@@ -197,7 +207,7 @@ export default function Pricing() {
                       </div>
                     )}
                     <CardHeader className="text-center pb-4">
-                      <div className={`w-16 h-16 rounded-full bg-gradient-to-br from-${plan.color}-600 to-${plan.color}-800 flex items-center justify-center mx-auto mb-4 shadow-lg`}>
+                      <div className={`w-16 h-16 rounded-full bg-gradient-to-br ${gradientColors[plan.color]} flex items-center justify-center mx-auto mb-4 shadow-lg`}>
                         <Icon className={`w-8 h-8 text-white`} />
                       </div>
                       <CardTitle className="text-white text-2xl">{plan.name}</CardTitle>

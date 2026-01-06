@@ -102,8 +102,26 @@ export default function ContentCard({ order, onCommentClick, onCancel }) {
   };
 
   const handleDownloadAndDelete = async (format) => {
+    // For PDF, DOCX, PPTX, and MP3, the download is sent via email
+    // We should warn the user and give them the option to proceed
+    const isAsyncFormat = ['pdf', 'docx', 'pptx', 'mp3'].includes(format);
+    
+    if (isAsyncFormat && !autoDeleteEnabled) {
+      // Show a different confirmation for async formats
+      setPendingDeleteFormat(format);
+      setIsDeleteConfirmOpen(true);
+      return;
+    }
+    
     if (autoDeleteEnabled) {
-      // Auto-delete is enabled, skip confirmation
+      // For sync formats (TXT), download and delete immediately
+      // For async formats, warn the user
+      if (isAsyncFormat) {
+        toast.error('Auto-delete is not supported for PDF, DOCX, PPTX, and MP3 formats. These are sent via email.');
+        await downloadContent(format);
+        return;
+      }
+      
       const success = await downloadContent(format);
       if (success) {
         deleteMutation.mutate(order.id);
@@ -119,10 +137,19 @@ export default function ContentCard({ order, onCommentClick, onCancel }) {
   const confirmDownloadAndDelete = async () => {
     if (!pendingDeleteFormat) return;
     
-    const success = await downloadContent(pendingDeleteFormat);
-    if (success) {
-      deleteMutation.mutate(order.id);
-      toast.success('Content downloaded and deleted');
+    const isAsyncFormat = ['pdf', 'docx', 'pptx', 'mp3'].includes(pendingDeleteFormat);
+    
+    if (isAsyncFormat) {
+      // For async formats, just initiate the download - don't delete
+      await downloadContent(pendingDeleteFormat);
+      toast.warning(`${pendingDeleteFormat.toUpperCase()} will be sent to your email. Content NOT deleted for safety.`);
+    } else {
+      // For TXT, download and delete
+      const success = await downloadContent(pendingDeleteFormat);
+      if (success) {
+        deleteMutation.mutate(order.id);
+        toast.success('Content downloaded and deleted');
+      }
     }
     
     setIsDeleteConfirmOpen(false);
@@ -526,9 +553,17 @@ export default function ContentCard({ order, onCommentClick, onCancel }) {
       <AlertDialog open={isDeleteConfirmOpen} onOpenChange={setIsDeleteConfirmOpen}>
         <AlertDialogContent className="bg-[#1A1A1A] border-gray-800">
           <AlertDialogHeader>
-            <AlertDialogTitle className="text-white">Delete this content after download?</AlertDialogTitle>
+            <AlertDialogTitle className="text-white">
+              {pendingDeleteFormat && ['pdf', 'docx', 'pptx', 'mp3'].includes(pendingDeleteFormat)
+                ? `Download ${pendingDeleteFormat.toUpperCase()}?`
+                : 'Delete this content after download?'
+              }
+            </AlertDialogTitle>
             <AlertDialogDescription className="text-gray-400">
-              The content will be downloaded first, then permanently deleted. This action cannot be undone.
+              {pendingDeleteFormat && ['pdf', 'docx', 'pptx', 'mp3'].includes(pendingDeleteFormat)
+                ? `${pendingDeleteFormat.toUpperCase()} will be generated and sent to your email. The content will NOT be deleted for safety reasons since the download is delivered asynchronously.`
+                : 'The content will be downloaded first, then permanently deleted. This action cannot be undone.'
+              }
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -543,9 +578,15 @@ export default function ContentCard({ order, onCommentClick, onCancel }) {
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmDownloadAndDelete}
-              className="bg-red-600 hover:bg-red-700 text-white"
+              className={pendingDeleteFormat && ['pdf', 'docx', 'pptx', 'mp3'].includes(pendingDeleteFormat)
+                ? "bg-purple-600 hover:bg-purple-700 text-white"
+                : "bg-red-600 hover:bg-red-700 text-white"
+              }
             >
-              Download & Delete
+              {pendingDeleteFormat && ['pdf', 'docx', 'pptx', 'mp3'].includes(pendingDeleteFormat)
+                ? 'Generate & Send'
+                : 'Download & Delete'
+              }
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

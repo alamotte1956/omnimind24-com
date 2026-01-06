@@ -233,17 +233,28 @@ export default function OrderHistory() {
     const selectedOrdersData = filteredAndSortedOrders.filter(o => selectedOrders.includes(o.id));
     const completedOrders = selectedOrdersData.filter(o => o.status === 'completed' && o.output_content);
     
-    // Download all first
-    completedOrders.forEach(order => downloadContent(order));
-    
-    // Then delete all
+    // Download all first and track which ones succeeded
+    const successfulDownloads = [];
     for (const order of completedOrders) {
-      await base44.entities.ContentOrder.delete(order.id);
+      const success = downloadContent(order);
+      if (success) {
+        successfulDownloads.push(order.id);
+      }
     }
     
-    queryClient.invalidateQueries(['order-history']);
-    setSelectedOrders([]);
-    toast.success(`Downloaded and deleted ${completedOrders.length} item(s)`);
+    // Only delete items that were successfully downloaded
+    if (successfulDownloads.length > 0) {
+      for (const orderId of successfulDownloads) {
+        await base44.entities.ContentOrder.delete(orderId);
+      }
+      
+      queryClient.invalidateQueries(['order-history']);
+      setSelectedOrders([]);
+      toast.success(`Downloaded and deleted ${successfulDownloads.length} item(s)`);
+    } else {
+      toast.error('No items were successfully downloaded');
+    }
+    
     setIsBulkDeleteConfirmOpen(false);
   };
 
