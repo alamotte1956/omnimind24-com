@@ -2,10 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MessageCircle, X, Send, Loader2, AlertCircle, Mail } from 'lucide-react';
+import { MessageCircle, X, Send, Loader2, Mail } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
-import { sanitizeText } from '@/lib/sanitizer';
 
 export default function SupportChatbot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -30,7 +29,7 @@ export default function SupportChatbot() {
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
 
-    const userMessage = { role: 'user', content: sanitizeText(input, 2000) };
+    const userMessage = { role: 'user', content: input.trim().slice(0, 2000) };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
@@ -43,7 +42,7 @@ export default function SupportChatbot() {
 
       const assistantMessage = {
         role: 'assistant',
-        content: sanitizeText(data.response, 10000),
+        content: data.response || 'Sorry, I could not process that.',
         needs_escalation: data.needs_escalation
       };
 
