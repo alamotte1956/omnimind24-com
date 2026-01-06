@@ -35,7 +35,6 @@ import Terms from "./Terms";
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 
 const PAGES = {
-    
     Home: Home,
     
     Login: Login,
@@ -145,8 +144,11 @@ function PagesContent() {
 }
 
 export default function Pages() {
+    // Use basename from vite config or default to root
+    const basename = import.meta.env.BASE_URL || '/';
+    
     return (
-        <Router basename="/omnimind24-com">
+        <Router basename={basename}>
             <PagesContent />
         </Router>
     );
