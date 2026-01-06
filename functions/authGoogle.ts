@@ -200,12 +200,20 @@ Deno.serve(async (req) => {
     const googleClientId = Deno.env.get('GOOGLE_CLIENT_ID');
     const googleClientSecret = Deno.env.get('GOOGLE_CLIENT_SECRET');
     const googleRedirectUri = Deno.env.get('GOOGLE_REDIRECT_URI');
-    const jwtSecret = Deno.env.get('JWT_SECRET') || 'default-secret-change-in-production';
+    const jwtSecret = Deno.env.get('JWT_SECRET');
 
     if (!googleClientId) {
       return Response.json({
         success: false,
         error: 'Google OAuth not configured'
+      } as AuthResponse, { status: 500 });
+    }
+
+    if (!jwtSecret) {
+      console.error('JWT_SECRET environment variable is not set');
+      return Response.json({
+        success: false,
+        error: 'Server configuration error'
       } as AuthResponse, { status: 500 });
     }
 

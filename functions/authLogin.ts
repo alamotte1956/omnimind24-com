@@ -172,7 +172,15 @@ Deno.serve(async (req) => {
     });
 
     // Get JWT secret
-    const jwtSecret = Deno.env.get('JWT_SECRET') || 'default-secret-change-in-production';
+    const jwtSecret = Deno.env.get('JWT_SECRET');
+    
+    if (!jwtSecret) {
+      console.error('JWT_SECRET environment variable is not set');
+      return Response.json({
+        success: false,
+        error: 'Server configuration error'
+      } as LoginResponse, { status: 500 });
+    }
 
     // Generate session token
     const expiresIn = rememberMe ? 30 * 24 * 60 * 60 : 24 * 60 * 60; // 30 days or 24 hours
