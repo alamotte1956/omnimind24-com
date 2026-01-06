@@ -6,6 +6,8 @@ import Credits from './pages/Credits';
 import Dashboard from './pages/Dashboard';
 import Home from './pages/Home';
 import Layout from './pages/Layout';
+import Login from './pages/Login';
+import LoginEnhanced from './pages/LoginEnhanced';
 import Models from './pages/Models';
 import MyFiles from './pages/MyFiles';
 import Onboarding from './pages/Onboarding';
@@ -15,6 +17,7 @@ import Settings from './pages/Settings';
 import TemplateLibrary from './pages/TemplateLibrary';
 import Terms from './pages/Terms';
 import index from './pages/index';
+import Pricing from './pages/Pricing';
 
 
 export const PAGES = {
@@ -26,6 +29,8 @@ export const PAGES = {
     "Dashboard": Dashboard,
     "Home": Home,
     "Layout": Layout,
+    "Login": Login,
+    "LoginEnhanced": LoginEnhanced,
     "Models": Models,
     "MyFiles": MyFiles,
     "Onboarding": Onboarding,
@@ -35,9 +40,10 @@ export const PAGES = {
     "TemplateLibrary": TemplateLibrary,
     "Terms": Terms,
     "index": index,
+    "Pricing": Pricing,
 }
 
 export const pagesConfig = {
-    mainPage: "Onboarding",
+    mainPage: "Dashboard",
     Pages: PAGES,
 };
