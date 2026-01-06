@@ -20,6 +20,7 @@ export default function Sidebar({ currentPage }) {
   const isStaffOrAdmin = userRole === 'staff' || userRole === 'admin';
 
   const navItems = [
+    { name: 'Pricing', page: 'Pricing', icon: Coins },
     { name: 'Credits', page: 'Credits', icon: Coins },
     { name: 'Orders', page: 'ContentOrders', icon: Sparkles },
     { name: 'Order Delivery', page: 'Dashboard', icon: Home },
@@ -37,6 +38,7 @@ export default function Sidebar({ currentPage }) {
 
   const getTooltipForPage = (page) => {
     const tooltips = {
+      'Pricing': 'View subscription plans and credit packages',
       'Credits': 'Purchase and manage your credit balance for content generation',
       'ContentOrders': 'Create A.I.-generated content using templates or custom prompts',
 
