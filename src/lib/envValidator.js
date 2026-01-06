@@ -14,6 +14,7 @@ import { z } from 'zod';
  */
 const envSchema = z.object({
   // Required Base44 Configuration
+  VITE_BASE44_APP_ID: z.string().min(1, 'Base44 App ID is required'),
   VITE_BASE44_PROJECT_ID: z.string().min(1, 'Base44 Project ID is required'),
   VITE_BASE44_API_URL: z.string().url('Base44 API URL must be a valid URL'),
   

@@ -29,10 +29,20 @@ export default [
       ...react.configs['jsx-runtime'].rules,
       ...reactHooks.configs.recommended.rules,
       'react/jsx-no-target-blank': 'off',
+      'react/prop-types': 'off', // Disable PropTypes validation for modern React
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },
       ],
+    },
+  },
+  // Add Node.js globals for config files
+  {
+    files: ['*.config.js'],
+    languageOptions: {
+      globals: {
+        ...globals.node,
+      },
     },
   },
 ]
