@@ -67,55 +67,93 @@ export default function ContentOrders() {
 
   const createOrderMutation = useMutation({
     mutationFn: async (data) => {
-      // Check if user has enough credits (staff/admin have unlimited)
-      if (user?.access_level !== 'staff' && user?.access_level !== 'admin') {
-        const creditCost = selectedCreditCost || 20;
-        const remainingBalance = (credits?.balance || 0) - selectedCreditCost;
+      const creditCost = selectedCreditCost || 20;
+      let creditDeductionResult = null;
 
-        if (remainingBalance < 0) {
-          throw new Error('Insufficient credits. Please purchase more credits to continue.');
-        }
-
-        // Deduct credits immediately
-        await base44.entities.Credit.update(credits.id, {
-          balance: credits.balance - creditCost,
-          total_used: (credits.total_used || 0) + creditCost
+      // Check rate limit first
+      try {
+        const rateLimitCheck = await base44.functions.invoke('checkRateLimit', {
+          user_email: user.email,
+          action_type: 'content_generation'
         });
-
-        // Create transaction record
-        await base44.entities.CreditTransaction.create({
-          transaction_type: 'usage',
-          amount: -creditCost,
-          description: `Content generation: ${data.task_type}`,
-          balance_after: credits.balance - creditCost
-        });
-        }
-
-        // Auto-generate title if not provided
-        const title = data.title || `${data.task_type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())} - ${new Date().toLocaleDateString()}`;
         
-        const order = await base44.entities.ContentOrder.create({
-          ...data,
-          title
+        if (!rateLimitCheck.allowed) {
+          throw new Error(`Rate limit exceeded. Please try again after ${new Date(rateLimitCheck.reset_at).toLocaleTimeString()}.`);
+        }
+      } catch (rateLimitError) {
+        // If rate limit check fails, allow the request but log it
+        if (rateLimitError.message?.includes('Rate limit exceeded')) {
+          throw rateLimitError;
+        }
+      }
+
+      // Use atomic backend credit deduction (staff/admin have unlimited)
+      if (user?.access_level !== 'staff' && user?.access_level !== 'admin') {
+        // Call atomic backend function to deduct credits
+        // This prevents race conditions from concurrent requests
+        creditDeductionResult = await base44.functions.invoke('deductCredits', {
+          user_email: user.email,
+          credit_cost: creditCost,
+          description: `Content generation: ${data.task_type}`
         });
 
-        // Send order confirmation email
-        await base44.functions.invoke('sendResendEmail', {
-          to: user.email,
-          subject: 'Order Placed - OmniMind24',
-          body: `Hi ${user.full_name || 'there'},\n\nYour content order has been placed successfully!\n\nOrder Details:\n- Type: ${data.task_type}\n- Credits Used: ${creditCost}\n- Remaining Balance: ${credits.balance - creditCost} credits\n\nYour content is being generated and will be ready soon.\n\nThank you for using OmniMind24!`,
-          from_name: 'OmniMind24'
-        });
+        // Check if deduction was successful
+        if (!creditDeductionResult.success) {
+          if (creditDeductionResult.code === 'INSUFFICIENT_CREDITS') {
+            throw new Error(`Insufficient credits. You have ${creditDeductionResult.current_balance} credits but need ${creditDeductionResult.required}.`);
+          }
+          throw new Error(creditDeductionResult.error || 'Failed to deduct credits');
+        }
+      }
+
+      // Auto-generate title if not provided (sanitize input)
+      const sanitizedTaskType = (data.task_type || 'content').replace(/[<>]/g, '');
+      const title = data.title 
+        ? data.title.replace(/[<>]/g, '').substring(0, 200)
+        : `${sanitizedTaskType.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())} - ${new Date().toLocaleDateString()}`;
+      
+      const order = await base44.entities.ContentOrder.create({
+        ...data,
+        title,
+        credits_used: creditCost
+      });
+
+      // Send order confirmation email (non-blocking)
+      base44.functions.invoke('sendResendEmail', {
+        to: user.email,
+        subject: 'Order Placed - OmniMind24',
+        body: `Hi ${user.full_name || 'there'},\n\nYour content order has been placed successfully!\n\nOrder Details:\n- Type: ${sanitizedTaskType}\n- Credits Used: ${creditCost}\n- Remaining Balance: ${creditDeductionResult?.new_balance ?? 'Unlimited'} credits\n\nYour content is being generated and will be ready soon.\n\nThank you for using OmniMind24!`,
+        from_name: 'OmniMind24'
+      }).catch(() => {}); // Email failure should not block order
+
+      // Process the order
       try {
         await base44.functions.invoke('processOrder', { order_id: order.id });
-      } catch (error) {
-        // Error handled by toast notification
-        // Mark as failed if processing fails
+      } catch (processingError) {
+        // Mark order as failed
         await base44.entities.ContentOrder.update(order.id, {
           status: 'failed',
-          output_content: `Processing failed: ${error.message}`
+          output_content: `Processing failed: ${processingError.message}`
         });
+
+        // Refund credits if deduction was made
+        if (creditDeductionResult?.success && user?.access_level !== 'staff' && user?.access_level !== 'admin') {
+          try {
+            await base44.functions.invoke('refundCredits', {
+              user_email: user.email,
+              credit_amount: creditCost,
+              reason: `Refund for failed order: ${order.id}`,
+              order_id: order.id
+            });
+            toast.info(`${creditCost} credits have been refunded due to processing failure.`);
+          } catch (refundError) {
+            toast.error('Processing failed. Please contact support for credit refund.');
+          }
+        }
+
+        throw new Error(`Content generation failed: ${processingError.message}`);
       }
+
       return order;
     },
     onSuccess: () => {

@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, Sparkles, Zap, ChevronDown, ChevronUp } from 'lucide-react';
 import MediaUploader from './MediaUploader';
+import { sanitizeText, sanitizeURL } from '@/lib/sanitizer';
 
 
 export default function QuickOrderForm({ initialPrompt = '', taskType = 'content_generation', onSubmit, isLoading }) {
@@ -27,18 +28,22 @@ export default function QuickOrderForm({ initialPrompt = '', taskType = 'content
 
   const handleSubmit = () => {
     if (input.trim()) {
+      // Sanitize all user inputs before submission
+      const sanitizedInput = sanitizeText(input, 10000);
+      const sanitizedUrls = uploadedFileUrls.map(url => sanitizeURL(url)).filter(Boolean);
+      
       const orderData = {
         task_type: taskType,
-        input_data: uploadedFileUrls.length > 0 
-          ? `${input}\n\nAttached files: ${uploadedFileUrls.join(', ')}`
-          : input,
+        input_data: sanitizedUrls.length > 0 
+          ? `${sanitizedInput}\n\nAttached files: ${sanitizedUrls.join(', ')}`
+          : sanitizedInput,
         status: 'processing',
-        ...(costarData.context && { costar_context: costarData.context }),
-        ...(costarData.objective && { costar_objective: costarData.objective }),
-        ...(costarData.style && { costar_style: costarData.style }),
-        ...(costarData.tone && { costar_tone: costarData.tone }),
-        ...(costarData.audience && { costar_audience: costarData.audience }),
-        ...(costarData.response_format && { costar_response_format: costarData.response_format })
+        ...(costarData.context && { costar_context: sanitizeText(costarData.context, 2000) }),
+        ...(costarData.objective && { costar_objective: sanitizeText(costarData.objective, 2000) }),
+        ...(costarData.style && { costar_style: sanitizeText(costarData.style, 500) }),
+        ...(costarData.tone && { costar_tone: sanitizeText(costarData.tone, 500) }),
+        ...(costarData.audience && { costar_audience: sanitizeText(costarData.audience, 500) }),
+        ...(costarData.response_format && { costar_response_format: sanitizeText(costarData.response_format, 500) })
       };
       onSubmit(orderData);
     }
