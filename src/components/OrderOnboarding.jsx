@@ -64,7 +64,7 @@ export default function OrderOnboarding({ onDismiss }) {
           <div className="flex items-start gap-2">
             <CheckCircle className="w-4 h-4 text-green-400 flex-shrink-0 mt-0.5" />
             <div>
-              <h4 className="font-semibold text-white mb-1 text-sm">Settings Already Optimized</h4>
+              <h4 className="font-semibold text-white mb-1 text-sm">Settings Optimized</h4>
               <p className="text-xs text-purple-100">
                 Your COSTAR profile auto-matches brand voice and objectives.
               </p>
