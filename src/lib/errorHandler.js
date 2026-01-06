@@ -1,8 +1,31 @@
 import React from 'react';
 
 /**
- * Centralized error handling utilities
+ * Centralized error handling utilities with Sentry integration
  */
+
+// Initialize Sentry if in production and DSN is configured
+let Sentry = null;
+if (typeof window !== 'undefined' && import.meta.env.PROD && import.meta.env.VITE_SENTRY_DSN) {
+  import('@sentry/react').then((SentryModule) => {
+    Sentry = SentryModule;
+    Sentry.init({
+      dsn: import.meta.env.VITE_SENTRY_DSN,
+      environment: import.meta.env.MODE,
+      integrations: [
+        Sentry.browserTracingIntegration(),
+        Sentry.replayIntegration(),
+      ],
+      // Performance Monitoring
+      tracesSampleRate: 0.1, // Capture 10% of transactions
+      // Session Replay
+      replaysSessionSampleRate: 0.1, // Sample 10% of sessions
+      replaysOnErrorSampleRate: 1.0, // Sample 100% of sessions with errors
+    });
+  }).catch((err) => {
+    console.error('Failed to initialize Sentry:', err);
+  });
+}
 
 // Error types for better categorization
 export const ErrorTypes = {
@@ -61,13 +84,37 @@ export const handleError = (error, context = '') => {
   const errorType = getErrorType(error);
   const sanitizedMessage = sanitizeErrorMessage(error, errorType);
   
-  // Log detailed error for debugging (in production, this would go to a logging service)
-  console.error(`[${errorType}] ${context}:`, {
-    message: error.message,
-    status: error.response?.status,
-    data: error.response?.data,
-    stack: error.stack
-  });
+  // Log to console in development, Sentry in production
+  if (import.meta.env.DEV) {
+    console.error(`[${errorType}] ${context}:`, {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+      stack: error.stack
+    });
+  }
+  
+  // Send to Sentry in production if available
+  if (Sentry && import.meta.env.PROD) {
+    Sentry.captureException(error, {
+      tags: {
+        errorType,
+        context,
+      },
+      extra: {
+        status: error.response?.status,
+        data: error.response?.data,
+      },
+    });
+  } else {
+    // Fallback to console.error if Sentry not available
+    console.error(`[${errorType}] ${context}:`, {
+      message: error.message,
+      status: error.response?.status,
+      data: error.response?.data,
+      stack: error.stack
+    });
+  }
   
   // Return user-friendly error info
   return {

@@ -73,17 +73,22 @@ Deno.serve(async (req) => {
     });
 
     // Clean up old entries (older than 24 hours)
+    // NOTE: For better performance in production, run this as a scheduled background job
+    // Recommended index: CREATE INDEX idx_ratelimit_created ON RateLimitLog(created_date)
     const cleanupThreshold = new Date(Date.now() - 86400000);
     const oldEntries = recentRequests.filter(
       (r: any) => new Date(r.created_date) < cleanupThreshold
     );
     
-    for (const entry of oldEntries.slice(0, 10)) { // Clean up to 10 at a time
-      try {
-        await base44.entities.RateLimitLog.delete(entry.id);
-      } catch (e) {
-        // Ignore cleanup errors
-      }
+    // Process all old entries instead of limiting to 10
+    // Use Promise.allSettled to continue even if some deletions fail
+    if (oldEntries.length > 0) {
+      const deletePromises = oldEntries.map((entry: any) => 
+        base44.entities.RateLimitLog.delete(entry.id).catch((e: any) => {
+          console.error(`Failed to delete rate limit log ${entry.id}:`, e);
+        })
+      );
+      await Promise.allSettled(deletePromises);
     }
 
     return Response.json({
