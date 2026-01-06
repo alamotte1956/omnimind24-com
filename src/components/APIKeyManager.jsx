@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Key, Eye, EyeOff, Trash2, Plus, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { sanitizeApiKey } from '@/lib/sanitizer';
 
 const PROVIDERS = [
   { id: 'openai', name: 'OpenAI', description: 'GPT-4, GPT-3.5 Turbo' },
@@ -73,7 +74,26 @@ export default function APIKeyManager() {
       toast.error('Please enter a valid API key');
       return;
     }
-    saveMutation.mutate({ provider, apiKey: key.trim() });
+    
+    // Sanitize the API key to remove any potentially harmful characters
+    const sanitizedKey = sanitizeApiKey(key.trim());
+    
+    // Validate key format based on provider
+    const keyPatterns = {
+      openai: /^sk-[a-zA-Z0-9_-]{20,}$/,
+      anthropic: /^sk-ant-[a-zA-Z0-9_-]{20,}$/,
+      google: /^[a-zA-Z0-9_-]{20,}$/,
+      groq: /^gsk_[a-zA-Z0-9_-]{20,}$/,
+      perplexity: /^pplx-[a-zA-Z0-9_-]{20,}$/,
+      cohere: /^[a-zA-Z0-9_-]{20,}$/
+    };
+    
+    const pattern = keyPatterns[provider];
+    if (pattern && !pattern.test(sanitizedKey)) {
+      toast.warning('API key format may be incorrect. Please verify the key.');
+    }
+    
+    saveMutation.mutate({ provider, apiKey: sanitizedKey });
   };
 
   return (

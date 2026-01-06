@@ -18,6 +18,7 @@ import SEOPanel from './SEOPanel';
 import ModelFeedbackDialog from './ModelFeedbackDialog';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { sanitizeText } from '@/lib/sanitizer';
 
 export default function ContentCard({ order, onCommentClick, onCancel }) {
   const queryClient = useQueryClient();
@@ -364,8 +365,8 @@ export default function ContentCard({ order, onCommentClick, onCancel }) {
         </div>
 
         {order.output_content && (
-          <div className="bg-[#0D0D0D] rounded-lg p-4 text-gray-300 text-sm max-h-48 overflow-y-auto">
-            {order.output_content}
+          <div className="bg-[#0D0D0D] rounded-lg p-4 text-gray-300 text-sm max-h-48 overflow-y-auto whitespace-pre-wrap">
+            {sanitizeText(order.output_content, 50000)}
           </div>
         )}
 

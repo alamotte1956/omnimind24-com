@@ -83,7 +83,7 @@ export const showErrorToast = (error, context = '', toastFunction) => {
   
   if (toastFunction) {
     toastFunction.error(errorInfo.message, {
-      description: errorType === ErrorTypes.NETWORK ? 'Check your connection' : undefined
+      description: errorInfo.type === ErrorTypes.NETWORK ? 'Check your connection' : undefined
     });
   }
   

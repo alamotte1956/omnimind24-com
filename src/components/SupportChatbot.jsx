@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MessageCircle, X, Send, Loader2, AlertCircle, Mail } from 'lucide-react';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
+import { sanitizeText } from '@/lib/sanitizer';
 
 export default function SupportChatbot() {
   const [isOpen, setIsOpen] = useState(false);
@@ -29,7 +30,7 @@ export default function SupportChatbot() {
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
 
-    const userMessage = { role: 'user', content: input };
+    const userMessage = { role: 'user', content: sanitizeText(input, 2000) };
     setMessages(prev => [...prev, userMessage]);
     setInput('');
     setIsLoading(true);
@@ -42,7 +43,7 @@ export default function SupportChatbot() {
 
       const assistantMessage = {
         role: 'assistant',
-        content: data.response,
+        content: sanitizeText(data.response, 10000),
         needs_escalation: data.needs_escalation
       };
 
