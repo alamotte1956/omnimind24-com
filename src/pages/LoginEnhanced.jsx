@@ -32,20 +32,6 @@ export default function LoginPage() {
   const [lockoutInfo, setLockoutInfo] = useState(null);
   const [csrfToken, setCsrfToken] = useState('');
 
-  useEffect(() => {
-    // Generate CSRF token on mount
-    setCsrfToken(getCSRFToken());
-    
-    // Check for existing lockout
-    checkLockout();
-    
-    // Log page visit
-    securityEventLogger.logEvent('login_page_visited');
-    
-    // Check if already authenticated
-    checkExistingSession();
-  }, []);
-
   const checkExistingSession = useCallback(async () => {
     try {
       const session = sessionManager.getSession();
@@ -69,6 +55,20 @@ export default function LoginPage() {
       setLockoutInfo(null);
     }
   }, [email]);
+
+  useEffect(() => {
+    // Generate CSRF token on mount
+    setCsrfToken(getCSRFToken());
+    
+    // Check for existing lockout
+    checkLockout();
+    
+    // Log page visit
+    securityEventLogger.logEvent('login_page_visited');
+    
+    // Check if already authenticated
+    checkExistingSession();
+  }, [checkLockout, checkExistingSession]);
 
   useEffect(() => {
     if (email) {

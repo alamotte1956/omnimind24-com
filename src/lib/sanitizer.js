@@ -5,7 +5,7 @@
  * Always sanitize user input and AI-generated content before rendering.
  */
 
-import React from 'react';
+import { useState, useCallback } from 'react';
 
 // HTML entity encoding map for XSS prevention
 const HTML_ENTITIES = {
@@ -268,9 +268,9 @@ export const sanitize = (input, options = {}) => {
 
 // React Hook for sanitizing input
 export const useSanitizedInput = (initialValue, options = {}) => {
-  const [value, setValue] = React.useState(() => sanitize(initialValue, options));
+  const [value, setValue] = useState(() => sanitize(initialValue, options));
   
-  const setSanitizedValue = React.useCallback((newValue) => {
+  const setSanitizedValue = useCallback((newValue) => {
     setValue(sanitize(newValue, options));
   }, [options]);
   
