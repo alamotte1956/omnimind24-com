@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Key, Eye, EyeOff, Trash2, Plus, CheckCircle } from 'lucide-react';
+import { Key, Eye, EyeOff, Trash2, CheckCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { sanitizeApiKey } from '@/lib/sanitizer';
 

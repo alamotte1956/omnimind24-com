@@ -5,6 +5,8 @@
  * Always sanitize user input and AI-generated content before rendering.
  */
 
+import React from 'react';
+
 // HTML entity encoding map for XSS prevention
 const HTML_ENTITIES = {
   '&': '&amp;',

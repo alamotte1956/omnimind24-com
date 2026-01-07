@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { 
-  Search, Edit, Trash2, Star, Copy, Filter, 
+  Search, Edit, Trash2, Star, Copy, 
   FileText, Mail, MessageSquare, Video, Briefcase 
 } from 'lucide-react';
 import { sanitize } from '@/lib/sanitizer';
@@ -94,7 +94,7 @@ const TemplateList = memo(({
   templates = [], 
   onEdit, 
   onDelete, 
-  onDuplicate, 
+  // onDuplicate, 
   onToggleFavorite,
   isLoading = false 
 }) => {
@@ -141,7 +141,7 @@ const TemplateList = memo(({
       try {
         await onDelete(template.id);
         toast.success('Template deleted successfully');
-      } catch (error) {
+      } catch (_error) {
         toast.error('Failed to delete template');
       }
     }
@@ -160,7 +160,7 @@ const TemplateList = memo(({
     try {
       await onToggleFavorite(template.id, !template.is_favorite);
       toast.success(template.is_favorite ? 'Removed from favorites' : 'Added to favorites');
-    } catch (error) {
+    } catch (_error) {
       toast.error('Failed to update favorite status');
     }
   }, [onToggleFavorite]);

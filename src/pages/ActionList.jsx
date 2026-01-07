@@ -1,11 +1,10 @@
-import React from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { RefreshCw, Loader2, CheckCircle2, Circle, Calendar } from 'lucide-react';
+import { RefreshCw, Loader2, Circle, Calendar } from 'lucide-react';
 import AuthGuard from '../components/AuthGuard';
 import OnboardingGuard from '../components/OnboardingGuard';
 import { toast } from 'sonner';

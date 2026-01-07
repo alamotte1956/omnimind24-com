@@ -1,8 +1,8 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+// import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
@@ -18,7 +18,7 @@ import RoleGuard from '../components/RoleGuard';
 import UserRoleBadge from '../components/UserRoleBadge';
 import RoleManagement from '../components/RoleManagement';
 import { toast } from 'sonner';
-import { format, subDays, startOfDay, endOfDay } from 'date-fns';
+import { format, subDays, startOfDay } from 'date-fns';
 
 export default function Admin() {
   const queryClient = useQueryClient();
@@ -95,7 +95,7 @@ export default function Admin() {
 
     // Filter data by time range
     const recentOrders = contentOrders.filter(o => new Date(o.created_date) >= startDate);
-    const recentTransactions = transactions.filter(t => new Date(t.created_date) >= startDate);
+    const _recentTransactions = transactions.filter(t => new Date(t.created_date) >= startDate);
     const recentUsers = allUsers.filter(u => new Date(u.created_date) >= startDate);
 
     // Calculate previous period for comparison

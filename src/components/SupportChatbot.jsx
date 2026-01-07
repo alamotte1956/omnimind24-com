@@ -47,7 +47,7 @@ export default function SupportChatbot() {
       };
 
       setMessages(prev => [...prev, assistantMessage]);
-    } catch (error) {
+    } catch (_error) {
       toast.error('Failed to get response. Please try again.');
       setMessages(prev => [...prev, {
         role: 'assistant',
@@ -78,7 +78,7 @@ export default function SupportChatbot() {
       }]);
       
       toast.success('Support ticket created! Our team will contact you soon.');
-    } catch (error) {
+    } catch (_error) {
       toast.error('Failed to create support ticket. Please email support@omnimind24.com directly.');
     }
   };

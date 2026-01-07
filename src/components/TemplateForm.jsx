@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
+// import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { sanitize } from '@/lib/sanitizer';
@@ -177,7 +177,8 @@ const TemplateForm = memo(({
               required
             />
             <p className="text-xs text-gray-500 mt-1">
-              Use {{variable_name}} syntax for dynamic variables. Max 5000 characters.
+              { }
+              Use {`{{variable_name}}`} syntax for dynamic variables. Max 5000 characters.
             </p>
           </div>
 
