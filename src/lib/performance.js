@@ -67,7 +67,7 @@ class PerformanceMonitor {
       .filter(([_, metric]) => metric.lastRenderTime > 16.67)
       .sort(([_, a], [__, b]) => b.lastRenderTime - a.lastRenderTime);
 
-    if (slowComponents.length > 0) {
+    if (import.meta.env.DEV && slowComponents.length > 0) {
       console.group('🚨 Performance Issues Detected');
       slowComponents.forEach(([name, metric]) => {
         console.log(`${name}: ${metric.lastRenderTime.toFixed(2)}ms (avg: ${metric.averageRenderTime?.toFixed(2)}ms, renders: ${metric.renderCount})`);
@@ -76,7 +76,7 @@ class PerformanceMonitor {
     }
 
     // Memory usage
-    if (performance.memory) {
+    if (import.meta.env.DEV && performance.memory) {
       console.log('💾 Memory Usage:', {
         used: `${(performance.memory.usedJSHeapSize / 1048576).toFixed(2)} MB`,
         total: `${(performance.memory.totalJSHeapSize / 1048576).toFixed(2)} MB`,
