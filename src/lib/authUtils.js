@@ -5,7 +5,7 @@
  * including session management, login attempt tracking, and security helpers.
  */
 
-import { generateSecureToken, hashString } from './security';
+import { generateSecureToken } from './security';
 
 // Session configuration
 const SESSION_CONFIG = {
@@ -391,7 +391,7 @@ class SecurityEventLogger {
       localStorage.setItem(this.eventsKey, JSON.stringify(trimmedEvents));
 
       // Log to console in development
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env.MODE === 'development') {
         console.log('[Security Event]', eventType, details);
       }
     } catch {

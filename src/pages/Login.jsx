@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,6 @@ import { toast } from 'sonner';
 import { 
   loginAttemptTracker, 
   securityEventLogger, 
-  sessionManager,
   isValidEmail,
   formatLockoutTime 
 } from '@/lib/authUtils';
@@ -37,21 +36,21 @@ export default function Login() {
     securityEventLogger.logEvent('login_page_visited');
   }, []);
 
-  const checkLockout = () => {
+  const checkLockout = useCallback(() => {
     const lockout = loginAttemptTracker.isLockedOut(email || 'anonymous');
     if (lockout.locked) {
       setLockoutInfo(lockout);
     } else {
       setLockoutInfo(null);
     }
-  };
+  }, [email]);
 
   useEffect(() => {
     // Update lockout status when email changes
     if (email) {
       checkLockout();
     }
-  }, [email]);
+  }, [email, checkLockout]);
 
   useEffect(() => {
     // Countdown timer for lockout
@@ -71,7 +70,7 @@ export default function Login() {
 
       return () => clearInterval(timer);
     }
-  }, [lockoutInfo?.lockoutUntil]);
+  }, [lockoutInfo?.lockoutUntil, lockoutInfo?.locked]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
@@ -70,7 +70,7 @@ export default function CreditMonitor() {
         })
         .catch(error => {
           // Log error for debugging (only in development)
-          if (process.env.NODE_ENV === 'development') {
+          if (import.meta.env.MODE === 'development') {
             console.error('Auto-purchase failed:', error);
           }
           
@@ -92,6 +92,9 @@ export default function CreditMonitor() {
           }, 300000); // 5 minutes cooldown before retry
         });
     }
+    // We intentionally only track credits.balance in dependencies, not the entire credits object
+    // This prevents unnecessary re-runs when other credit properties change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [credits?.balance, autoPurchase, isStaffOrAdmin]);
 
   return null; // This is a monitoring component, no UI

@@ -5,7 +5,7 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 
 export default [
-  { ignores: ['dist'] },
+  { ignores: ['dist', 'node_modules', '*.min.js', 'build'] },
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {
@@ -34,6 +34,20 @@ export default [
         'warn',
         { allowConstantExport: true },
       ],
+      // Stricter rules for code quality
+      'no-console': ['warn', { allow: ['warn', 'error'] }],
+      'no-unused-vars': ['error', { 
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+        caughtErrorsIgnorePattern: '^_'
+      }],
+      'no-empty': ['error', { allowEmptyCatch: false }],
+      'react/display-name': 'warn',
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
+      'react/jsx-no-duplicate-props': 'error',
+      'react/jsx-uses-react': 'off', // Not needed with new JSX transform
+      'react/jsx-uses-vars': 'error',
     },
   },
   // Add Node.js globals for config files

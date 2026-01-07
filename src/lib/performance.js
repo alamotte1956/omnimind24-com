@@ -2,6 +2,8 @@
  * Performance monitoring utilities
  */
 
+import { useRef, useEffect, memo, useState, useMemo, useCallback } from 'react';
+
 // Performance monitoring singleton
 class PerformanceMonitor {
   constructor() {
@@ -94,9 +96,9 @@ const performanceMonitor = new PerformanceMonitor();
 
 // React Hook for performance monitoring
 export const usePerformanceMonitor = (componentName) => {
-  const renderCount = React.useRef(0);
+  const renderCount = useRef(0);
 
-  React.useEffect(() => {
+  useEffect(() => {
     performanceMonitor.startRender(componentName);
     
     return () => {
@@ -113,8 +115,8 @@ export const usePerformanceMonitor = (componentName) => {
 
 // Higher-order component for performance monitoring
 export const withPerformanceMonitoring = (WrappedComponent, componentName) => {
-  const MonitoredComponent = React.memo((props) => {
-    React.useEffect(() => {
+  const MonitoredComponent = memo((props) => {
+    useEffect(() => {
       performanceMonitor.startRender(componentName);
       
       return () => {
@@ -147,9 +149,9 @@ export const detectMemoryLeaks = () => {
 
 // Debounce utility to prevent excessive renders
 export const useDebounce = (value, delay) => {
-  const [debouncedValue, setDebouncedValue] = React.useState(value);
+  const [debouncedValue, setDebouncedValue] = useState(value);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedValue(value);
     }, delay);
@@ -164,9 +166,9 @@ export const useDebounce = (value, delay) => {
 
 // Throttle utility for performance
 export const useThrottle = (callback, delay) => {
-  const lastRun = React.useRef(Date.now());
+  const lastRun = useRef(Date.now());
 
-  return React.useCallback((...args) => {
+  return useCallback((...args) => {
     if (Date.now() - lastRun.current >= delay) {
       callback(...args);
       lastRun.current = Date.now();
@@ -176,9 +178,9 @@ export const useThrottle = (callback, delay) => {
 
 // Virtual scroll hook for large lists
 export const useVirtualScroll = (items, itemHeight, containerHeight) => {
-  const [scrollTop, setScrollTop] = React.useState(0);
+  const [scrollTop, setScrollTop] = useState(0);
 
-  const visibleItems = React.useMemo(() => {
+  const visibleItems = useMemo(() => {
     const startIndex = Math.floor(scrollTop / itemHeight);
     const endIndex = Math.min(
       startIndex + Math.ceil(containerHeight / itemHeight) + 1,
@@ -248,7 +250,7 @@ export const useImageOptimization = () => {
 export { performanceMonitor };
 
 // Development-only performance logging
-if (process.env.NODE_ENV === 'development') {
+if (import.meta.env.MODE === 'development') {
   // Log performance metrics every 30 seconds
   setInterval(() => {
     performanceMonitor.logSummary();

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -32,6 +32,30 @@ export default function LoginPage() {
   const [lockoutInfo, setLockoutInfo] = useState(null);
   const [csrfToken, setCsrfToken] = useState('');
 
+  const checkExistingSession = useCallback(async () => {
+    try {
+      const session = sessionManager.getSession();
+      if (session) {
+        // User already has a valid session
+        const user = await base44.auth.me();
+        if (user) {
+          navigate('/Dashboard');
+        }
+      }
+    } catch {
+      // No valid session, continue to login
+    }
+  }, [navigate]);
+
+  const checkLockout = useCallback(() => {
+    const lockout = loginAttemptTracker.isLockedOut(email || 'anonymous');
+    if (lockout.locked) {
+      setLockoutInfo(lockout);
+    } else {
+      setLockoutInfo(null);
+    }
+  }, [email]);
+
   useEffect(() => {
     // Generate CSRF token on mount
     setCsrfToken(getCSRFToken());
@@ -44,37 +68,13 @@ export default function LoginPage() {
     
     // Check if already authenticated
     checkExistingSession();
-  }, []);
-
-  const checkExistingSession = async () => {
-    try {
-      const session = sessionManager.getSession();
-      if (session) {
-        // User already has a valid session
-        const user = await base44.auth.me();
-        if (user) {
-          navigate('/Dashboard');
-        }
-      }
-    } catch (error) {
-      // No valid session, continue to login
-    }
-  };
-
-  const checkLockout = () => {
-    const lockout = loginAttemptTracker.isLockedOut(email || 'anonymous');
-    if (lockout.locked) {
-      setLockoutInfo(lockout);
-    } else {
-      setLockoutInfo(null);
-    }
-  };
+  }, [checkLockout, checkExistingSession]);
 
   useEffect(() => {
     if (email) {
       checkLockout();
     }
-  }, [email]);
+  }, [email, checkLockout]);
 
   useEffect(() => {
     // Countdown timer for lockout
@@ -94,7 +94,7 @@ export default function LoginPage() {
 
       return () => clearInterval(timer);
     }
-  }, [lockoutInfo?.lockoutUntil]);
+  }, [lockoutInfo?.lockoutUntil, lockoutInfo?.locked]);
 
   const handleEmailPasswordLogin = async (e) => {
     e.preventDefault();

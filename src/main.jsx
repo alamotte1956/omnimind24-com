@@ -4,6 +4,7 @@ import '@/index.css'
 import { GoogleOAuthProvider } from '@react-oauth/google'
 import { validateEnv, isDemoMode } from '@/lib/envValidator'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import ErrorBoundary from '@/components/ErrorBoundary'
 
 // Create a query client
 const queryClient = new QueryClient({
@@ -45,9 +46,11 @@ if (isDemoMode()) {
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <QueryClientProvider client={queryClient}>
-    <GoogleOAuthProvider clientId={googleClientId}>
-      <App />
-    </GoogleOAuthProvider>
-  </QueryClientProvider>
+  <ErrorBoundary>
+    <QueryClientProvider client={queryClient}>
+      <GoogleOAuthProvider clientId={googleClientId}>
+        <App />
+      </GoogleOAuthProvider>
+    </QueryClientProvider>
+  </ErrorBoundary>
 )

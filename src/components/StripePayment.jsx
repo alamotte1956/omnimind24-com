@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import {
   Elements,
@@ -103,6 +103,24 @@ export default function StripePayment({
   onSuccess,
   onCancel,
 }) {
+  // React Hooks must be called before any conditional returns
+  const options = useMemo(
+    () => ({
+      clientSecret,
+      appearance: {
+        theme: "night",
+        variables: {
+          colorPrimary: "#9333EA",
+          colorBackground: "#0D0D0D",
+          colorText: "#FFFFFF",
+          colorDanger: "#EF4444",
+          borderRadius: "8px",
+        },
+      },
+    }),
+    [clientSecret]
+  );
+
   if (!stripePromise) {
     return null; // Silently skip Stripe if not configured
   }
@@ -121,23 +139,6 @@ export default function StripePayment({
       </Card>
     );
   }
-
-  const options = useMemo(
-    () => ({
-      clientSecret,
-      appearance: {
-        theme: "night",
-        variables: {
-          colorPrimary: "#9333EA",
-          colorBackground: "#0D0D0D",
-          colorText: "#FFFFFF",
-          colorDanger: "#EF4444",
-          borderRadius: "8px",
-        },
-      },
-    }),
-    [clientSecret]
-  );
 
   return (
     <Card className="bg-[#1A1A1A] border-gray-800 max-w-md mx-auto">
