@@ -15,7 +15,7 @@ const SESSION_CONFIG = {
 };
 
 // Login attempt tracking configuration
-const LOGIN_CONFIG = {
+export const LOGIN_CONFIG = {
   maxAttempts: 5,
   lockoutDuration: 15 * 60 * 1000, // 15 minutes
   attemptWindow: 15 * 60 * 1000, // 15 minutes window for counting attempts
@@ -391,7 +391,7 @@ class SecurityEventLogger {
       localStorage.setItem(this.eventsKey, JSON.stringify(trimmedEvents));
 
       // Log to console in development
-      if (process.env.NODE_ENV === 'development') {
+      if (import.meta.env.MODE === 'development') {
         console.log('[Security Event]', eventType, details);
       }
     } catch {

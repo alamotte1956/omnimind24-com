@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import { 
   loginAttemptTracker, 
   securityEventLogger, 
-  sessionManager,
+  LOGIN_CONFIG,
   isValidEmail,
   formatLockoutTime 
 } from '@/lib/authUtils';

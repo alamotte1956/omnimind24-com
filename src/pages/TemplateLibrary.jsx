@@ -133,7 +133,8 @@ export default function TemplateLibrary() {
 
   const duplicateTemplateMutation = useMutation({
     mutationFn: async (template) => {
-      const { id: _id, created_date: _created_date, updated_date: _updated_date, created_by: _created_by, usage_count: _usage_count, ...templateData } = template;
+      // eslint-disable-next-line no-unused-vars
+      const { id, created_date, updated_date, created_by, usage_count, ...templateData } = template;
       return base44.entities.UserTemplate.create({
         ...templateData,
         name: `${template.name} (Copy)`,

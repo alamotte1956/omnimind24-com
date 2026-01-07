@@ -30,6 +30,7 @@ export default [
       ...reactHooks.configs.recommended.rules,
       'react/jsx-no-target-blank': 'off',
       'react/prop-types': 'off', // Disable PropTypes validation for modern React
+      'react/no-unescaped-entities': 'off', // Allow apostrophes and quotes in JSX
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },
