@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -134,18 +133,17 @@ const HYBRID_PLANS = [
 
 export default function Pricing() {
   const navigate = useNavigate();
-  const [billingCycle, setBillingCycle] = useState('monthly');
 
-  const { data: user } = useQuery({
+  useQuery({
     queryKey: ['user'],
     queryFn: () => base44.auth.me()
   });
 
-  const handleSubscribe = (plan) => {
+  const handleSubscribe = () => {
     navigate('/Credits');
   };
 
-  const handleBuyCredits = (pkg) => {
+  const handleBuyCredits = () => {
     navigate('/Credits');
   };
 
@@ -186,11 +184,6 @@ export default function Pricing() {
                   purple: 'from-purple-600 to-purple-800',
                   blue: 'from-blue-600 to-blue-800',
                   green: 'from-green-600 to-green-800'
-                };
-                const bgColors = {
-                  purple: 'bg-purple-600',
-                  blue: 'bg-blue-600',
-                  green: 'bg-green-600'
                 };
                 return (
                   <Card
@@ -485,7 +478,7 @@ export default function Pricing() {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-400">
-                  Yes! Subscribe for your baseline needs and buy extra credits as needed. It's the perfect hybrid approach.
+                  Yes! Subscribe for your baseline needs and buy extra credits as needed. It&apos;s the perfect hybrid approach.
                 </p>
               </CardContent>
             </Card>
