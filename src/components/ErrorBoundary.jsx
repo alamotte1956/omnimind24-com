@@ -72,7 +72,13 @@ class ErrorBoundary extends React.Component {
                   Try Again
                 </Button>
                 <Button
-                  onClick={() => window.location.href = '/'}
+                  onClick={() => {
+                    // Reset error state and allow parent to handle navigation
+                    this.handleReset();
+                    // Use pushState to navigate without full page reload
+                    window.history.pushState({}, '', '/');
+                    window.dispatchEvent(new PopStateEvent('popstate'));
+                  }}
                   variant="outline"
                   className="border-gray-700"
                 >

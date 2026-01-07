@@ -34,8 +34,9 @@ jobs:
     - name: Build project
       run: npm run build
       env:
-        # Add any required environment variables for build
-        VITE_STRIPE_PUBLISHABLE_KEY: ${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_placeholder' }}
+        # Use test placeholder for Stripe - will be replaced in production
+        # The build will succeed even without real keys for CI purposes
+        VITE_STRIPE_PUBLISHABLE_KEY: ${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY || 'pk_test_ci_placeholder' }}
     
     - name: Run tests
       run: npm run test:run

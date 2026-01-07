@@ -92,6 +92,8 @@ export default function CreditMonitor() {
           }, 300000); // 5 minutes cooldown before retry
         });
     }
+    // We intentionally only track credits.balance in dependencies, not the entire credits object
+    // This prevents unnecessary re-runs when other credit properties change
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [credits?.balance, autoPurchase, isStaffOrAdmin]);
 
