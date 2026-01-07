@@ -5,7 +5,7 @@
  * including session management, login attempt tracking, and security helpers.
  */
 
-import { generateSecureToken, hashString } from './security';
+import { generateSecureToken } from './security';
 
 // Session configuration
 const SESSION_CONFIG = {
