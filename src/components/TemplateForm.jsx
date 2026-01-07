@@ -87,7 +87,9 @@ const TemplateForm = memo(({
         id: template?.id
       });
     } catch (error) {
-      console.error('Failed to save template:', error);
+      if (import.meta.env.DEV) {
+        console.error('Failed to save template:', error);
+      }
       toast.error('Failed to save template');
     }
   }, [formData, onSave, template]);

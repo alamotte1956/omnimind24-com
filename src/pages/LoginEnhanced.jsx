@@ -228,7 +228,9 @@ export default function LoginPage() {
       }
 
     } catch (error) {
-      console.error('Google login error:', error);
+      if (import.meta.env.DEV) {
+        console.error('Google login error:', error);
+      }
       securityEventLogger.logEvent('google_oauth_failed', { 
         error: error.message 
       });
@@ -240,7 +242,9 @@ export default function LoginPage() {
   }, [navigate]);
 
   const handleGoogleError = useCallback(() => {
-    console.error('Google login failed');
+    if (import.meta.env.DEV) {
+      console.error('Google login failed');
+    }
     securityEventLogger.logEvent('google_oauth_error');
     setError('Google login failed. Please try again.');
     toast.error('Google authentication failed');

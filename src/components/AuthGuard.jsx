@@ -33,7 +33,9 @@ export default function AuthGuard({ children }) {
     // In demo mode, we always have a user, so no redirect needed
     if (error && !user && !isLoading) {
       // Log error for debugging
-      console.error('Auth error:', error);
+      if (import.meta.env.DEV) {
+        console.error('Auth error:', error);
+      }
       
       // Only redirect if we're not in demo mode
       // The mock client will always return a user, so this shouldn't trigger

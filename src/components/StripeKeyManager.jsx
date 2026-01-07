@@ -98,7 +98,9 @@ export default function StripeKeyManager() {
       });
 
     } catch (error) {
-      console.error('Stripe key validation error:', error);
+      if (import.meta.env.DEV) {
+        console.error('Stripe key validation error:', error);
+      }
       toast.error('Validation failed. Please check your keys and try again.');
     } finally {
       setIsSubmitting(false);

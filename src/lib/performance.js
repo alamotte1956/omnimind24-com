@@ -37,8 +37,8 @@ class PerformanceMonitor {
         startTime: null
       });
 
-      // Warn if render is slow
-      if (renderTime > 16.67) { // More than 60fps threshold
+      // Warn if render is slow (only in development)
+      if (import.meta.env.DEV && renderTime > 16.67) { // More than 60fps threshold
         console.warn(`⚠️ Slow render detected: ${componentName} took ${renderTime.toFixed(2)}ms`);
       }
     }
@@ -141,7 +141,7 @@ export const detectMemoryLeaks = () => {
     const currentMemory = performance.memory.usedJSHeapSize;
     const memoryIncrease = currentMemory - initialMemory;
     
-    if (memoryIncrease > 10 * 1024 * 1024) { // 10MB increase
+    if (import.meta.env.DEV && memoryIncrease > 10 * 1024 * 1024) { // 10MB increase
       console.warn(`🔍 Potential memory leak detected: ${(memoryIncrease / 1024 / 1024).toFixed(2)} MB increase`);
     }
   };

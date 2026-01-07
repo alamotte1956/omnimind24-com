@@ -23,7 +23,10 @@ if (typeof window !== 'undefined' && import.meta.env.PROD && import.meta.env.VIT
       replaysOnErrorSampleRate: 1.0, // Sample 100% of sessions with errors
     });
   }).catch((err) => {
-    console.error('Failed to initialize Sentry:', err);
+    // Only log Sentry initialization errors in development
+    if (import.meta.env.DEV) {
+      console.error('Failed to initialize Sentry:', err);
+    }
   });
 }
 
@@ -106,8 +109,8 @@ export const handleError = (error, context = '') => {
         data: error.response?.data,
       },
     });
-  } else {
-    // Fallback to console.error if Sentry not available
+  } else if (import.meta.env.DEV) {
+    // Only log to console in development
     console.error(`[${errorType}] ${context}:`, {
       message: error.message,
       status: error.response?.status,
@@ -115,6 +118,7 @@ export const handleError = (error, context = '') => {
       stack: error.stack
     });
   }
+  // In production without Sentry, errors are silently handled (user gets sanitized message)
   
   // Return user-friendly error info
   return {

@@ -108,12 +108,14 @@ export const validateEnv = () => {
     
     // Check for production-specific warnings
     const warnings = productionWarnings(env);
-    if (warnings.length > 0) {
+    if (warnings.length > 0 && import.meta.env.DEV) {
       console.warn('Environment Configuration Warnings:');
       warnings.forEach(warning => console.warn(warning));
     }
     
-    console.log('✅ Environment variables validated successfully');
+    if (import.meta.env.DEV) {
+      console.log('✅ Environment variables validated successfully');
+    }
     return env;
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -140,7 +142,7 @@ export const validateEnv = () => {
  */
 export const getEnv = (key) => {
   const value = import.meta.env[key];
-  if (value === undefined) {
+  if (value === undefined && import.meta.env.DEV) {
     console.warn(`Environment variable ${key} is not defined`);
   }
   return value;
