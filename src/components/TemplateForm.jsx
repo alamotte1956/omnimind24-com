@@ -177,6 +177,7 @@ const TemplateForm = memo(({
               required
             />
             <p className="text-xs text-gray-500 mt-1">
+              {/* eslint-disable-next-line react/no-unescaped-entities */}
               Use {{variable_name}} syntax for dynamic variables. Max 5000 characters.
             </p>
           </div>

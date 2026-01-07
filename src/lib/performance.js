@@ -2,6 +2,8 @@
  * Performance monitoring utilities
  */
 
+import React from 'react';
+
 // Performance monitoring singleton
 class PerformanceMonitor {
   constructor() {
@@ -248,7 +250,7 @@ export const useImageOptimization = () => {
 export { performanceMonitor };
 
 // Development-only performance logging
-if (process.env.NODE_ENV === 'development') {
+if (import.meta.env.MODE === 'development') {
   // Log performance metrics every 30 seconds
   setInterval(() => {
     performanceMonitor.logSummary();
