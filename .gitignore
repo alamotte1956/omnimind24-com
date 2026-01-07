@@ -1,47 +1,57 @@
-# Dependencies
-node_modules/
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+/node_modules
 /.pnp
 .pnp.js
 
-# Testing
+# testing
 /coverage
 
-# Production
-/build
-/dist
+# next.js
+/.next/
+/out/
 
-# Misc
-.DS_Store
-.env
+# Environment Variables - SECURITY CRITICAL
+# Never commit these files - they contain API keys and secrets
+.env*.local
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+.env*.local
 
-# Logs
+# Security - Keys and Secrets
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+.secrets
+
+# Temporary files
+*.tmp
+*.temp
+.cache/
+
+# production
+/build
+
+# misc
+.DS_Store
+*.pem
+
+# debug
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-lerna-debug.log*
-.pnpm-debug.log*
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
+# local env files
+.env*.local
 
-# OS
-Thumbs.db
+# vercel
+.vercel
 
-# Build artifacts
+# typescript
 *.tsbuildinfo
-
-# Lock files (optional - uncomment if you want to ignore)
-# package-lock.json
-# yarn.lock
-# pnpm-lock.yaml
+next-env.d.ts
