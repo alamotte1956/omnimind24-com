@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { toast } from 'sonner';
@@ -92,6 +92,7 @@ export default function CreditMonitor() {
           }, 300000); // 5 minutes cooldown before retry
         });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [credits?.balance, autoPurchase, isStaffOrAdmin]);
 
   return null; // This is a monitoring component, no UI

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GoogleLogin } from '@react-oauth/google';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -46,7 +46,7 @@ export default function LoginPage() {
     checkExistingSession();
   }, []);
 
-  const checkExistingSession = async () => {
+  const checkExistingSession = useCallback(async () => {
     try {
       const session = sessionManager.getSession();
       if (session) {
@@ -56,25 +56,25 @@ export default function LoginPage() {
           navigate('/Dashboard');
         }
       }
-    } catch (error) {
+    } catch {
       // No valid session, continue to login
     }
-  };
+  }, [navigate]);
 
-  const checkLockout = () => {
+  const checkLockout = useCallback(() => {
     const lockout = loginAttemptTracker.isLockedOut(email || 'anonymous');
     if (lockout.locked) {
       setLockoutInfo(lockout);
     } else {
       setLockoutInfo(null);
     }
-  };
+  }, [email]);
 
   useEffect(() => {
     if (email) {
       checkLockout();
     }
-  }, [email]);
+  }, [email, checkLockout]);
 
   useEffect(() => {
     // Countdown timer for lockout
@@ -94,7 +94,7 @@ export default function LoginPage() {
 
       return () => clearInterval(timer);
     }
-  }, [lockoutInfo?.lockoutUntil]);
+  }, [lockoutInfo?.lockoutUntil, lockoutInfo?.locked]);
 
   const handleEmailPasswordLogin = async (e) => {
     e.preventDefault();
