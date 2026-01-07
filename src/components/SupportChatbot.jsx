@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -47,7 +47,7 @@ export default function SupportChatbot() {
       };
 
       setMessages(prev => [...prev, assistantMessage]);
-    } catch (error) {
+    } catch (_error) {
       toast.error('Failed to get response. Please try again.');
       setMessages(prev => [...prev, {
         role: 'assistant',
@@ -78,7 +78,7 @@ export default function SupportChatbot() {
       }]);
       
       toast.success('Support ticket created! Our team will contact you soon.');
-    } catch (error) {
+    } catch (_error) {
       toast.error('Failed to create support ticket. Please email support@omnimind24.com directly.');
     }
   };

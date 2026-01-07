@@ -51,7 +51,7 @@ export default function Dashboard() {
     }
   ];
 
-  const hasOrders = orders.length > 0;
+  const _hasOrders = orders.length > 0;
 
   const downloadOrder = (order) => {
     try {
@@ -66,7 +66,7 @@ export default function Dashboard() {
       a.remove();
       toast.success('Content downloaded');
       return true;
-    } catch (error) {
+    } catch (_error) {
       toast.error('Download failed');
       return false;
     }

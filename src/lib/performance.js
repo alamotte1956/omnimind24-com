@@ -2,6 +2,7 @@
  * Performance monitoring utilities
  */
 
+import React from 'react';
 import { useRef, useEffect, memo, useState, useMemo, useCallback } from 'react';
 
 // Performance monitoring singleton
@@ -70,14 +71,18 @@ class PerformanceMonitor {
     if (slowComponents.length > 0) {
       console.group('🚨 Performance Issues Detected');
       slowComponents.forEach(([name, metric]) => {
+        if (import.meta.env.DEV) {
         console.log(`${name}: ${metric.lastRenderTime.toFixed(2)}ms (avg: ${metric.averageRenderTime?.toFixed(2)}ms, renders: ${metric.renderCount})`);
+        }
       });
       console.groupEnd();
     }
 
     // Memory usage
     if (performance.memory) {
+      if (import.meta.env.DEV) {
       console.log('💾 Memory Usage:', {
+      }
         used: `${(performance.memory.usedJSHeapSize / 1048576).toFixed(2)} MB`,
         total: `${(performance.memory.totalJSHeapSize / 1048576).toFixed(2)} MB`,
         limit: `${(performance.memory.jsHeapSizeLimit / 1048576).toFixed(2)} MB`

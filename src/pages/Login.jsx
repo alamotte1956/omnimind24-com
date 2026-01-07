@@ -11,7 +11,8 @@ import {
   loginAttemptTracker, 
   securityEventLogger, 
   isValidEmail,
-  formatLockoutTime 
+  formatLockoutTime,
+  AUTH_CONFIG 
 } from '@/lib/authUtils';
 import { sanitizeEmail } from '@/lib/sanitizer';
 import { getCSRFToken } from '@/lib/security';
@@ -34,7 +35,7 @@ export default function Login() {
     
     // Log page visit
     securityEventLogger.logEvent('login_page_visited');
-  }, []);
+  }, [checkLockout]);
 
   const checkLockout = useCallback(() => {
     const lockout = loginAttemptTracker.isLockedOut(email || 'anonymous');
@@ -127,7 +128,7 @@ export default function Login() {
           lockoutUntil: attemptResult.lockoutUntil,
           remainingTime: attemptResult.lockoutUntil - Date.now()
         });
-        setError(`Too many failed attempts. Account locked for ${formatLockoutTime(LOGIN_CONFIG.lockoutDuration)}.`);
+        setError(`Too many failed attempts. Account locked for ${formatLockoutTime(AUTH_CONFIG.login.lockoutDuration)}.`);
       } else {
         setError(err.message || 'Login failed. Please check your credentials.');
         if (attemptResult.attemptsRemaining <= 2) {
@@ -299,7 +300,7 @@ export default function Login() {
 
           {/* Sign Up Link */}
           <p className="text-center text-sm text-gray-400">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <a href="#" className="text-purple-400 hover:text-purple-300">
               Sign up for free
             </a>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,7 +18,7 @@ export default function CommentSection({ contentOrderId }) {
     queryFn: () => base44.auth.me()
   });
 
-  const { data: comments = [], isLoading } = useQuery({
+  const { data: comments = [], _isLoading } = useQuery({
     queryKey: ['content-comments', contentOrderId],
     queryFn: () => base44.entities.ContentComment.filter({ content_order_id: contentOrderId }, '-created_date'),
     initialData: []

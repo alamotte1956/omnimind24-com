@@ -97,8 +97,12 @@ const productionWarnings = (env) => {
 export const validateEnv = () => {
   // In demo mode, use relaxed validation
   if (isDemoMode()) {
+    if (import.meta.env.DEV) {
     console.log('🎭 Running in DEMO/PREVIEW mode - using mock data');
+    }
+    if (import.meta.env.DEV) {
     console.log('✅ Environment validation skipped for demo mode');
+    }
     return demoEnvSchema.parse(import.meta.env);
   }
 
@@ -113,7 +117,9 @@ export const validateEnv = () => {
       warnings.forEach(warning => console.warn(warning));
     }
     
+    if (import.meta.env.DEV) {
     console.log('✅ Environment variables validated successfully');
+    }
     return env;
   } catch (error) {
     if (error instanceof z.ZodError) {

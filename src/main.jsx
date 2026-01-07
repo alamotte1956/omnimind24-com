@@ -41,8 +41,12 @@ const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || 'demo-client-id'
 
 // Show demo mode banner if applicable
 if (isDemoMode()) {
+  if (import.meta.env.DEV) {
   console.log('%c🎭 DEMO MODE ACTIVE', 'background: #9333EA; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold;');
+  }
+  if (import.meta.env.DEV) {
   console.log('This is a preview version with mock data. Some features may be limited.');
+  }
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(

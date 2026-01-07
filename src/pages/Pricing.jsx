@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -136,7 +136,7 @@ const HYBRID_PLANS = [
 export default function Pricing() {
   const navigate = useNavigate();
 
-  const { data: user } = useQuery({
+  const { data: _user } = useQuery({
     queryKey: ['user'],
     queryFn: () => base44.auth.me()
   });

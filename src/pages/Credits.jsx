@@ -14,7 +14,6 @@ import {
 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import AuthGuard from '../components/AuthGuard';
-import StripePayment from '../components/StripePayment';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
@@ -29,7 +28,7 @@ export default function Credits() {
   const queryClient = useQueryClient();
   const [autoThreshold, setAutoThreshold] = useState(50);
   const [autoAmount, setAutoAmount] = useState(500);
-  const [checkoutData, setCheckoutData] = useState(null);
+  const [_checkoutData, setCheckoutData] = useState(null);
 
   const { data: user } = useQuery({
     queryKey: ['user'],
@@ -156,7 +155,7 @@ export default function Credits() {
     }
   });
 
-  const handlePaymentSuccess = () => {
+  const _handlePaymentSuccess = () => {
     setCheckoutData(null);
     queryClient.invalidateQueries(['credits']);
     queryClient.invalidateQueries(['credit-transactions']);

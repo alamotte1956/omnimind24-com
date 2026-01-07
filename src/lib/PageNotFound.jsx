@@ -3,7 +3,7 @@ import { base44 } from '@/api/base44Client';
 import { useQuery } from '@tanstack/react-query';
 
 
-export default function PageNotFound({}) {
+export default function PageNotFound() {
     const location = useLocation();
     const pageName = location.pathname.substring(1);
 
@@ -13,7 +13,7 @@ export default function PageNotFound({}) {
             try {
                 const user = await base44.auth.me();
                 return { user, isAuthenticated: true };
-            } catch (error) {
+            } catch (_error) {
                 return { user: null, isAuthenticated: false };
             }
         }
@@ -35,7 +35,7 @@ export default function PageNotFound({}) {
                             Page Not Found
                         </h2>
                         <p className="text-slate-600 leading-relaxed">
-                            The page <span className="font-medium text-slate-700">"{pageName}"</span> could not be found in this application.
+                            The page <span className="font-medium text-slate-700">&quot;{pageName}&quot;</span> could not be found in this application.
                         </p>
                     </div>
                     

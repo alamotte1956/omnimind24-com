@@ -1,4 +1,3 @@
-import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -8,7 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 export default function SecurityDashboard() {
-  const { data: user } = useQuery({
+  const { data: _user } = useQuery({
     queryKey: ['user'],
     queryFn: () => base44.auth.me()
   });
@@ -17,7 +16,7 @@ export default function SecurityDashboard() {
     try {
       base44.auth.logout();
       toast.success('Logged out successfully');
-    } catch (error) {
+    } catch (_error) {
       toast.error('Failed to logout');
     }
   };

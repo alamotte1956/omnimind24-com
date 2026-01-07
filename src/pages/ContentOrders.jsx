@@ -17,23 +17,20 @@ import QuickOrderForm from '../components/QuickOrderForm';
 import OrderOnboarding from '../components/OrderOnboarding';
 import ShareContentDialog from '../components/ShareContentDialog';
 import CommentSection from '../components/CommentSection';
-import ContentSearchFilter from '../components/ContentSearchFilter';
-import ContentCard from '../components/ContentCard';
 import FolderManager from '../components/FolderManager';
-import AdvancedSearch from '../components/AdvancedSearch';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 
 export default function ContentOrders() {
   const queryClient = useQueryClient();
-  const [taskType, setTaskType] = useState('content_generation');
+  const [_taskType, setTaskType] = useState('content_generation');
   const [selectedCreditCost, setSelectedCreditCost] = useState(0);
   const [quickInput, setQuickInput] = useState('');
   const [productCounts, setProductCounts] = useState({});
-  const [showOnboarding, setShowOnboarding] = useState(() => {
+  const [_showOnboarding, setShowOnboarding] = useState(() => {
     return localStorage.getItem('hideOrderOnboarding') !== 'true';
   });
-  const [selectedOrderForComments, setSelectedOrderForComments] = useState(null);
+  const [_selectedOrderForComments, _setSelectedOrderForComments] = useState(null);
   const [selectedFolder, setSelectedFolder] = useState(null);
   const [selectedTags, setSelectedTags] = useState([]);
   const [dateRange, setDateRange] = useState('all');
@@ -44,7 +41,7 @@ export default function ContentOrders() {
     showFavorites: false
   });
 
-  const { data: orders = [], isLoading } = useQuery({
+  const { data: orders = [] } = useQuery({
     queryKey: ['content-orders'],
     queryFn: () => base44.entities.ContentOrder.list('-created_date')
   });
@@ -146,7 +143,7 @@ export default function ContentOrders() {
               order_id: order.id
             });
             toast.info(`${creditCost} credits have been refunded due to processing failure.`);
-          } catch (refundError) {
+          } catch (_refundError) {
             toast.error('Processing failed. Please contact support for credit refund.');
           }
         }
@@ -172,7 +169,7 @@ export default function ContentOrders() {
     }
   });
 
-  const cancelOrderMutation = useMutation({
+  const _cancelOrderMutation = useMutation({
     mutationFn: async (orderId) => {
       await base44.entities.ContentOrder.update(orderId, {
         status: 'failed',
@@ -199,19 +196,19 @@ export default function ContentOrders() {
     createOrderMutation.mutate(data);
   };
 
-  const dismissOnboarding = () => {
+  const _dismissOnboarding = () => {
     setShowOnboarding(false);
     localStorage.setItem('hideOrderOnboarding', 'true');
   };
 
-  const copyToClipboard = (text) => {
+  const _copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
     toast.success('Content copied to clipboard');
   };
 
 
 
-  const allTags = useMemo(() => {
+  const _allTags = useMemo(() => {
     const tags = new Set();
     orders.forEach(order => {
       if (order.tags && Array.isArray(order.tags)) {
@@ -221,7 +218,7 @@ export default function ContentOrders() {
     return Array.from(tags);
   }, [orders]);
 
-  const filteredOrders = useMemo(() => {
+  const _filteredOrders = useMemo(() => {
     return orders.filter(order => {
       if (selectedFolder !== null && order.folder_id !== selectedFolder) return false;
       if (selectedFolder === null && order.folder_id) return false;
@@ -271,13 +268,13 @@ export default function ContentOrders() {
     });
   }, [orders, selectedFolder, filters, selectedTags, dateRange]);
 
-  const handleTagToggle = (tag) => {
+  const _handleTagToggle = (tag) => {
     setSelectedTags(prev => 
       prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
     );
   };
 
-  const clearAllFilters = () => {
+  const _clearAllFilters = () => {
     setFilters({
       searchTerm: '',
       taskType: 'all',

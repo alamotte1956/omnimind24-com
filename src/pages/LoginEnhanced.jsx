@@ -197,11 +197,15 @@ export default function LoginPage() {
 
       // For now, use Base44 auth flow
       // In production, you would decode the JWT and create/update user
+      if (import.meta.env.DEV) {
       console.log('Google credential received:', credentialResponse);
+      }
 
       // Decode the JWT token to get user info (client-side only for display)
       const decoded = JSON.parse(atob(credentialResponse.credential.split('.')[1]));
+      if (import.meta.env.DEV) {
       console.log('Google user info:', {
+      }
         email: decoded.email,
         name: decoded.name,
         picture: decoded.picture,
@@ -442,7 +446,7 @@ export default function LoginPage() {
 
           {/* Sign Up Link */}
           <p className="text-center text-sm text-gray-400">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <a 
               href="/signup" 
               className="text-purple-400 hover:text-purple-300 font-semibold transition-colors"

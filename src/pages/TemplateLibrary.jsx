@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -21,7 +21,7 @@ import OnboardingGuard from '../components/OnboardingGuard';
 import TemplateReviewDialog from '../components/TemplateReviewDialog';
 import { toast } from 'sonner';
 
-const ICON_OPTIONS = [
+const _ICON_OPTIONS = [
   'FileText', 'Mail', 'MessageSquare', 'Youtube', 'Instagram', 
   'Facebook', 'Twitter', 'Linkedin', 'Video', 'Megaphone',
   'ShoppingCart', 'Newspaper', 'BookOpen', 'Code', 'Briefcase'

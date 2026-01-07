@@ -66,7 +66,7 @@ const mockTemplates = [
 
 // Mock entity operations
 const createMockEntity = (entityName) => ({
-  list: async (orderBy) => {
+  list: async (_orderBy) => {
     if (entityName === 'ContentOrder') return mockOrders;
     if (entityName === 'Template') return mockTemplates;
     return [];
@@ -86,11 +86,15 @@ export const base44 = {
   auth: {
     me: async () => mockUser,
     redirectToLogin: (returnPath) => {
+      if (import.meta.env.DEV) {
       console.log('Demo mode: Login redirect would go to:', returnPath);
+      }
       // In demo mode, we don't redirect
     },
     logout: () => {
+      if (import.meta.env.DEV) {
       console.log('Demo mode: Logout clicked');
+      }
       window.location.reload();
     }
   },
@@ -106,17 +110,23 @@ export const base44 = {
   },
   functions: {
     invoke: async (functionName, params) => {
+      if (import.meta.env.DEV) {
       console.log('Demo mode: Function invoked:', functionName, params);
+      }
       return { data: 'Demo function response' };
     }
   },
   from: (tableName) => ({
     select: async (fields) => {
+      if (import.meta.env.DEV) {
       console.log('Demo mode: Select from', tableName);
+      }
       return [];
     },
     insert: async (data) => {
+      if (import.meta.env.DEV) {
       console.log('Demo mode: Insert into', tableName, data);
+      }
       return { id: `new-${Date.now()}`, ...data };
     }
   })

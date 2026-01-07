@@ -1,10 +1,10 @@
-import React, { memo, useCallback } from 'react';
+import React from 'react';
+import { memo, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { sanitize } from '@/lib/sanitizer';
@@ -171,14 +171,13 @@ const TemplateForm = memo(({
             <Textarea
               value={formData.content}
               onChange={handleContentChange}
-              placeholder="Enter your template content here. Use variables like {{variable_name}} for dynamic content."
+              placeholder="Enter your template content here. Use variables like {{{variable_name}}} for dynamic content."
               className="bg-[#0D0D0D] border-gray-700 text-white mt-2 min-h-[200px]"
               disabled={isLoading}
               required
             />
             <p className="text-xs text-gray-500 mt-1">
-              {/* eslint-disable-next-line react/no-unescaped-entities */}
-              Use {{variable_name}} syntax for dynamic variables. Max 5000 characters.
+                Use &#123;&#123;variable_name&#125;&#125; syntax for dynamic variables. Max 5000 characters.
             </p>
           </div>
 

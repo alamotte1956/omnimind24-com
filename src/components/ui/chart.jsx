@@ -5,7 +5,7 @@ import * as RechartsPrimitive from "recharts";
 import { cn } from "@/lib/utils";
 
 // Format: { THEME_NAME: CSS_SELECTOR }
-const THEMES = {
+const _THEMES = {
   light: "",
   dark: ".dark",
 };

@@ -392,7 +392,9 @@ class SecurityEventLogger {
 
       // Log to console in development
       if (import.meta.env.MODE === 'development') {
+        if (import.meta.env.DEV) {
         console.log('[Security Event]', eventType, details);
+        }
       }
     } catch {
       // Ignore storage errors

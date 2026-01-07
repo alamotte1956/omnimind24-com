@@ -1,7 +1,6 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
-import { Home, Settings, MessageSquare, Shield, CheckSquare, Sparkles, Coins, History, Gift, Library, BarChart3, LogOut, FolderOpen } from 'lucide-react';
+import { Home, Settings, Shield, CheckSquare, Sparkles, Coins, History, Gift, BarChart3, LogOut, FolderOpen } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
@@ -17,7 +16,7 @@ export default function Sidebar({ currentPage }) {
   const userRole = user?.access_level || 'user';
   const isAdmin = userRole === 'admin';
 
-  const isStaffOrAdmin = userRole === 'staff' || userRole === 'admin';
+  const _isStaffOrAdmin = userRole === 'staff' || userRole === 'admin';
 
   const navItems = [
     { name: 'Pricing', page: 'Pricing', icon: Coins },

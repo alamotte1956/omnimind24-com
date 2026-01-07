@@ -179,7 +179,7 @@ export default function OrderHistory() {
       a.remove();
       toast.success('Content downloaded');
       return true;
-    } catch (error) {
+    } catch (_error) {
       toast.error('Download failed');
       return false;
     }

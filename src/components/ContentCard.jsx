@@ -79,7 +79,7 @@ export default function ContentCard({ order, onCommentClick, onCancel }) {
         return true;
       } else if (['pdf', 'docx', 'pptx'].includes(format)) {
         toast.loading(`Generating ${format.toUpperCase()}...`);
-        const response = await base44.functions.invoke('exportContent', {
+        const _response = await base44.functions.invoke('exportContent', {
           content_order_id: order.id,
           format: format
         });
@@ -88,14 +88,14 @@ export default function ContentCard({ order, onCommentClick, onCancel }) {
         return true;
       } else if (format === 'mp3') {
         toast.loading('Generating audio...');
-        const response = await base44.functions.invoke('exportAudio', {
+        const _response = await base44.functions.invoke('exportAudio', {
           content_order_id: order.id
         });
         
         toast.success('Audio generated! Check your email for the download link.');
         return true;
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error(`Failed to download ${format.toUpperCase()}`);
       return false;
     }
