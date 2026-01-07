@@ -2,6 +2,8 @@
  * Performance monitoring utilities
  */
 
+import React from 'react';
+
 // Performance monitoring singleton
 class PerformanceMonitor {
   constructor() {
@@ -62,8 +64,8 @@ class PerformanceMonitor {
     
     const metrics = this.getMetrics();
     const slowComponents = Object.entries(metrics)
-      .filter(([_, metric]) => metric.lastRenderTime > 16.67)
-      .sort(([_, a], [__, b]) => b.lastRenderTime - a.lastRenderTime);
+      .filter(([, metric]) => metric.lastRenderTime > 16.67)
+      .sort(([, a], [, b]) => b.lastRenderTime - a.lastRenderTime);
 
     if (slowComponents.length > 0) {
       console.group('🚨 Performance Issues Detected');
@@ -248,7 +250,7 @@ export const useImageOptimization = () => {
 export { performanceMonitor };
 
 // Development-only performance logging
-if (process.env.NODE_ENV === 'development') {
+if (import.meta.env.MODE === 'development') {
   // Log performance metrics every 30 seconds
   setInterval(() => {
     performanceMonitor.logSummary();

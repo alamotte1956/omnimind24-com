@@ -1,4 +1,3 @@
-import React from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Shield, ShieldCheck, User } from 'lucide-react';
 

@@ -1,50 +1,27 @@
-import React, { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Sparkles, Copy, CheckCircle, Lightbulb, Zap, MessageSquare, HelpCircle } from 'lucide-react';
+import { Loader2, Sparkles, Zap, HelpCircle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 import AuthGuard from '../components/AuthGuard';
 import OnboardingGuard from '../components/OnboardingGuard';
-import ContentIdeaCard from '../components/ContentIdeaCard';
 import QuickOrderForm from '../components/QuickOrderForm';
-import OrderOnboarding from '../components/OrderOnboarding';
-import ShareContentDialog from '../components/ShareContentDialog';
-import CommentSection from '../components/CommentSection';
-import ContentSearchFilter from '../components/ContentSearchFilter';
-import ContentCard from '../components/ContentCard';
 import FolderManager from '../components/FolderManager';
-import AdvancedSearch from '../components/AdvancedSearch';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
 
 export default function ContentOrders() {
   const queryClient = useQueryClient();
-  const [taskType, setTaskType] = useState('content_generation');
+  const [taskType] = useState('content_generation');
   const [selectedCreditCost, setSelectedCreditCost] = useState(0);
   const [quickInput, setQuickInput] = useState('');
   const [productCounts, setProductCounts] = useState({});
-  const [showOnboarding, setShowOnboarding] = useState(() => {
-    return localStorage.getItem('hideOrderOnboarding') !== 'true';
-  });
-  const [selectedOrderForComments, setSelectedOrderForComments] = useState(null);
   const [selectedFolder, setSelectedFolder] = useState(null);
-  const [selectedTags, setSelectedTags] = useState([]);
-  const [dateRange, setDateRange] = useState('all');
-  const [filters, setFilters] = useState({
-    searchTerm: '',
-    taskType: 'all',
-    status: 'all',
-    showFavorites: false
-  });
 
-  const { data: orders = [], isLoading } = useQuery({
+  useQuery({
     queryKey: ['content-orders'],
     queryFn: () => base44.entities.ContentOrder.list('-created_date')
   });
@@ -146,7 +123,7 @@ export default function ContentOrders() {
               order_id: order.id
             });
             toast.info(`${creditCost} credits have been refunded due to processing failure.`);
-          } catch (refundError) {
+          } catch {
             toast.error('Processing failed. Please contact support for credit refund.');
           }
         }
@@ -172,22 +149,6 @@ export default function ContentOrders() {
     }
   });
 
-  const cancelOrderMutation = useMutation({
-    mutationFn: async (orderId) => {
-      await base44.entities.ContentOrder.update(orderId, {
-        status: 'failed',
-        output_content: 'Cancelled by user'
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['content-orders']);
-      toast.success('Order cancelled');
-    },
-    onError: (error) => {
-      toast.error('Failed to cancel order: ' + error.message);
-    }
-  });
-
   const handleStartOver = () => {
     setSelectedCreditCost(0);
     setProductCounts({});
@@ -197,96 +158,6 @@ export default function ContentOrders() {
 
   const handleQuickSubmit = (data) => {
     createOrderMutation.mutate(data);
-  };
-
-  const dismissOnboarding = () => {
-    setShowOnboarding(false);
-    localStorage.setItem('hideOrderOnboarding', 'true');
-  };
-
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text);
-    toast.success('Content copied to clipboard');
-  };
-
-
-
-  const allTags = useMemo(() => {
-    const tags = new Set();
-    orders.forEach(order => {
-      if (order.tags && Array.isArray(order.tags)) {
-        order.tags.forEach(tag => tags.add(tag));
-      }
-    });
-    return Array.from(tags);
-  }, [orders]);
-
-  const filteredOrders = useMemo(() => {
-    return orders.filter(order => {
-      if (selectedFolder !== null && order.folder_id !== selectedFolder) return false;
-      if (selectedFolder === null && order.folder_id) return false;
-      
-      if (filters.showFavorites && !order.is_favorite) return false;
-      
-      if (filters.taskType !== 'all' && order.task_type !== filters.taskType) return false;
-      
-      if (filters.status !== 'all' && order.status !== filters.status) return false;
-      
-      if (dateRange !== 'all') {
-        const orderDate = new Date(order.created_date);
-        const now = new Date();
-        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-        
-        if (dateRange === 'today' && orderDate < today) return false;
-        if (dateRange === 'week') {
-          const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-          if (orderDate < weekAgo) return false;
-        }
-        if (dateRange === 'month') {
-          const monthAgo = new Date(now.getFullYear(), now.getMonth() - 1, now.getDate());
-          if (orderDate < monthAgo) return false;
-        }
-        if (dateRange === 'year') {
-          const yearAgo = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate());
-          if (orderDate < yearAgo) return false;
-        }
-      }
-      
-      if (filters.searchTerm) {
-        const searchLower = filters.searchTerm.toLowerCase();
-        const matchesContent = order.output_content?.toLowerCase().includes(searchLower);
-        const matchesInput = order.input_data?.toLowerCase().includes(searchLower);
-        const matchesTitle = order.title?.toLowerCase().includes(searchLower);
-        const matchesTags = order.tags?.some(tag => tag.toLowerCase().includes(searchLower));
-        if (!matchesContent && !matchesInput && !matchesTitle && !matchesTags) return false;
-      }
-      
-      if (selectedTags.length > 0) {
-        const orderTags = order.tags || [];
-        const hasTag = selectedTags.some(tag => orderTags.includes(tag));
-        if (!hasTag) return false;
-      }
-      
-      return true;
-    });
-  }, [orders, selectedFolder, filters, selectedTags, dateRange]);
-
-  const handleTagToggle = (tag) => {
-    setSelectedTags(prev => 
-      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
-    );
-  };
-
-  const clearAllFilters = () => {
-    setFilters({
-      searchTerm: '',
-      taskType: 'all',
-      status: 'all',
-      showFavorites: false
-    });
-    setSelectedTags([]);
-    setDateRange('all');
-    setSelectedFolder(null);
   };
 
   return (
