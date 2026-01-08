@@ -1,6 +1,6 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,14 +25,14 @@ export default function SEOPanel({ contentOrderId }) {
   const { data: analysis, isLoading } = useQuery({
     queryKey: ['seo-analysis', contentOrderId],
     queryFn: async () => {
-      const results = await base44.entities.SEOAnalysis.filter({ content_order_id: contentOrderId });
+      const results = await apiClient.entities.SEOAnalysis.filter({ content_order_id: contentOrderId });
       return results[0] || null;
     }
   });
 
   const analyzeMutation = useMutation({
     mutationFn: async () => {
-      const response = await base44.functions.invoke('analyzeSEO', { content_order_id: contentOrderId });
+      const response = await apiClient.functions.invoke('analyzeSEO', { content_order_id: contentOrderId });
       return response.data;
     },
     onSuccess: () => {

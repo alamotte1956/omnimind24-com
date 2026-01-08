@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -31,11 +31,11 @@ export default function ContentCard({ order, onCommentClick, onCancel }) {
 
   const { data: folders = [] } = useQuery({
     queryKey: ['content-folders'],
-    queryFn: () => base44.entities.ContentFolder.list('-created_date')
+    queryFn: () => apiClient.entities.ContentFolder.list('-created_date')
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.ContentOrder.update(id, data),
+    mutationFn: ({ id, data }) => apiClient.entities.ContentOrder.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries(['content-orders']);
       toast.success('Content updated');
@@ -43,7 +43,7 @@ export default function ContentCard({ order, onCommentClick, onCancel }) {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.ContentOrder.delete(id),
+    mutationFn: (id) => apiClient.entities.ContentOrder.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries(['content-orders']);
       toast.success('Content deleted');
@@ -70,7 +70,7 @@ export default function ContentCard({ order, onCommentClick, onCancel }) {
     } else if (['pdf', 'docx', 'pptx'].includes(format)) {
       toast.loading(`Generating ${format.toUpperCase()}...`);
       try {
-        const _response = await base44.functions.invoke('exportContent', {
+        const _response = await apiClient.functions.invoke('exportContent', {
           content_order_id: order.id,
           format: format
         });
@@ -82,7 +82,7 @@ export default function ContentCard({ order, onCommentClick, onCancel }) {
     } else if (format === 'mp3') {
       toast.loading('Generating audio...');
       try {
-        const _response = await base44.functions.invoke('exportAudio', {
+        const _response = await apiClient.functions.invoke('exportAudio', {
           content_order_id: order.id
         });
         

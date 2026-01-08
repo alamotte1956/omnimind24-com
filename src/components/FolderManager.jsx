@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,16 +37,16 @@ export default function FolderManager({ onFolderSelect, selectedFolderId }) {
 
   const { data: folders = [] } = useQuery({
     queryKey: ['content-folders'],
-    queryFn: () => base44.entities.ContentFolder.list('-created_date')
+    queryFn: () => apiClient.entities.ContentFolder.list('-created_date')
   });
 
   const { data: orders = [] } = useQuery({
     queryKey: ['content-orders'],
-    queryFn: () => base44.entities.ContentOrder.list('-created_date')
+    queryFn: () => apiClient.entities.ContentOrder.list('-created_date')
   });
 
   const createMutation = useMutation({
-    mutationFn: (data) => base44.entities.ContentFolder.create(data),
+    mutationFn: (data) => apiClient.entities.ContentFolder.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries(['content-folders']);
       setIsDialogOpen(false);
@@ -56,7 +56,7 @@ export default function FolderManager({ onFolderSelect, selectedFolderId }) {
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.ContentFolder.update(id, data),
+    mutationFn: ({ id, data }) => apiClient.entities.ContentFolder.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries(['content-folders']);
       setIsDialogOpen(false);
@@ -66,7 +66,7 @@ export default function FolderManager({ onFolderSelect, selectedFolderId }) {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.ContentFolder.delete(id),
+    mutationFn: (id) => apiClient.entities.ContentFolder.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries(['content-folders']);
       toast.success('Folder deleted');

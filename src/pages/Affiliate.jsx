@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,19 +19,19 @@ export default function Affiliate() {
 
   const { data: user } = useQuery({
     queryKey: ['user'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => apiClient.auth.me()
   });
 
   const { data: myReferrals = [] } = useQuery({
     queryKey: ['my-referrals'],
-    queryFn: () => base44.entities.Referral.filter({ referrer_email: user?.email }, '-created_date'),
+    queryFn: () => apiClient.entities.Referral.filter({ referrer_email: user?.email }, '-created_date'),
     enabled: !!user
   });
 
   const { data: myReferralCode } = useQuery({
     queryKey: ['my-referral-code'],
     queryFn: async () => {
-      const existingCodes = await base44.entities.Referral.filter({ 
+      const existingCodes = await apiClient.entities.Referral.filter({ 
         referrer_email: user?.email,
         referee_email: null 
       });
@@ -46,7 +46,7 @@ export default function Affiliate() {
   const generateCodeMutation = useMutation({
     mutationFn: async () => {
       const code = `${user.full_name.replace(/\s+/g, '').toUpperCase().substring(0, 4)}${Math.random().toString(36).substring(2, 8).toUpperCase()}`;
-      await base44.entities.Referral.create({
+      await apiClient.entities.Referral.create({
         referral_code: code,
         referrer_email: user.email,
         status: 'pending'
@@ -65,7 +65,7 @@ export default function Affiliate() {
 
   const redeemMutation = useMutation({
     mutationFn: async (code) => {
-      const result = await base44.functions.invoke('redeemReferral', { 
+      const result = await apiClient.functions.invoke('redeemReferral', { 
         referral_code: code 
       });
       return result.data;

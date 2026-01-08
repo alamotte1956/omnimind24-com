@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -45,16 +45,16 @@ export default function RoleManagement() {
 
   const { data: roles = [] } = useQuery({
     queryKey: ['roles'],
-    queryFn: () => base44.entities.Role.list('-created_date')
+    queryFn: () => apiClient.entities.Role.list('-created_date')
   });
 
   const { data: users = [] } = useQuery({
     queryKey: ['allUsers'],
-    queryFn: () => base44.entities.User.list()
+    queryFn: () => apiClient.entities.User.list()
   });
 
   const createRoleMutation = useMutation({
-    mutationFn: (data) => base44.entities.Role.create(data),
+    mutationFn: (data) => apiClient.entities.Role.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries(['roles']);
       setIsDialogOpen(false);
@@ -64,7 +64,7 @@ export default function RoleManagement() {
   });
 
   const updateRoleMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Role.update(id, data),
+    mutationFn: ({ id, data }) => apiClient.entities.Role.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries(['roles']);
       setIsDialogOpen(false);
@@ -75,7 +75,7 @@ export default function RoleManagement() {
   });
 
   const deleteRoleMutation = useMutation({
-    mutationFn: (id) => base44.entities.Role.delete(id),
+    mutationFn: (id) => apiClient.entities.Role.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries(['roles']);
       toast.success('Role deleted');

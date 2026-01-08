@@ -1,6 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, MessageSquare, Brain, TrendingUp, Download, Sparkles, FileDown } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -14,12 +14,12 @@ import { Link } from 'react-router-dom';
 export default function Dashboard() {
   const { data: user } = useQuery({
     queryKey: ['user'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => apiClient.auth.me()
   });
 
   const { data: orders = [] } = useQuery({
     queryKey: ['content-orders'],
-    queryFn: () => base44.entities.ContentOrder.list('-created_date'),
+    queryFn: () => apiClient.entities.ContentOrder.list('-created_date'),
     enabled: !!user
   });
 
@@ -171,7 +171,7 @@ export default function Dashboard() {
             </p>
             <Button
               onClick={async () => {
-                const response = await base44.functions.invoke('generateSalesSheet');
+                const response = await apiClient.functions.invoke('generateSalesSheet');
                 const blob = new Blob([response.data], { type: 'application/pdf' });
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');
@@ -203,7 +203,7 @@ export default function Dashboard() {
             </p>
             <Button
               onClick={async () => {
-                const response = await base44.functions.invoke('generateTechnicalSheet');
+                const response = await apiClient.functions.invoke('generateTechnicalSheet');
                 const blob = new Blob([response.data], { type: 'application/pdf' });
                 const url = window.URL.createObjectURL(blob);
                 const a = document.createElement('a');

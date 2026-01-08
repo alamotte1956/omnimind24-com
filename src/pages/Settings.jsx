@@ -1,6 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { User, Bell, Coins } from 'lucide-react';
 import AuthGuard from '../components/AuthGuard';
@@ -14,7 +14,7 @@ export default function Settings() {
 
   const { data: user } = useQuery({
     queryKey: ['user'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => apiClient.auth.me()
   });
 
   const isStaffOrAdmin = user?.access_level === 'staff' || user?.access_level === 'admin';
@@ -22,9 +22,9 @@ export default function Settings() {
   const { data: credits } = useQuery({
     queryKey: ['credits', user?.id],
     queryFn: async () => {
-      const userCredits = await base44.entities.Credit.filter({ created_by: user.email });
+      const userCredits = await apiClient.entities.Credit.filter({ created_by: user.email });
       if (userCredits.length === 0) {
-        const newCredit = await base44.entities.Credit.create({ balance: 0, total_purchased: 0, total_used: 0 });
+        const newCredit = await apiClient.entities.Credit.create({ balance: 0, total_purchased: 0, total_used: 0 });
         return newCredit;
       }
       return userCredits[0];

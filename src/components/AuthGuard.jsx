@@ -1,25 +1,32 @@
 import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 import { Loader2 } from 'lucide-react';
 import { handleError, withErrorHandling } from '@/lib/errorHandler';
 
+/**
+ * AuthGuard - Protects routes that require authentication
+ * 
+ * TODO: Backend API needed:
+ * - GET /api/auth/me - Get current authenticated user
+ */
 export default function AuthGuard({ children }) {
   const { data: user, isLoading, error } = useQuery({
     queryKey: ['user'],
     queryFn: withErrorHandling(async () => {
       try {
-        const userData = await base44.auth.me();
+        const userData = await apiClient.auth.me();
         if (!userData) {
           throw new Error('No user data received');
         }
         return userData;
       } catch (err) {
         // Handle authentication errors gracefully
-        if (err.response?.status === 401) {
+        if (err.response?.status === 401 || err.status === 401) {
           // Clear any stored auth data
           if (typeof window !== 'undefined') {
-            localStorage.removeItem('base44_token');
+            localStorage.removeItem('auth_token');
+            sessionStorage.removeItem('auth_token');
           }
         }
         throw err;
@@ -45,7 +52,7 @@ export default function AuthGuard({ children }) {
       
       // Redirect to login with current path as redirect
       const currentPath = window.location.pathname + window.location.search;
-      base44.auth.redirectToLogin(currentPath);
+      apiClient.auth.redirectToLogin(currentPath);
     }
   }, [error, isLoading, user]);
 

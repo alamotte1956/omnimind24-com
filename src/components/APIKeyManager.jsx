@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,13 +23,13 @@ export default function APIKeyManager() {
 
   const { data: user } = useQuery({
     queryKey: ['user'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => apiClient.auth.me()
   });
 
   const { data: apiKeys = [] } = useQuery({
     queryKey: ['apiKeys', user?.id],
     queryFn: async () => {
-      const keys = await base44.entities.APIKey.filter({ created_by: user.email });
+      const keys = await apiClient.entities.APIKey.filter({ created_by: user.email });
       return keys;
     },
     enabled: !!user
@@ -39,9 +39,9 @@ export default function APIKeyManager() {
     mutationFn: async ({ provider, apiKey }) => {
       const existing = apiKeys.find(k => k.provider === provider);
       if (existing) {
-        await base44.entities.APIKey.update(existing.id, { api_key: apiKey, is_active: true });
+        await apiClient.entities.APIKey.update(existing.id, { api_key: apiKey, is_active: true });
       } else {
-        await base44.entities.APIKey.create({ provider, api_key: apiKey, is_active: true });
+        await apiClient.entities.APIKey.create({ provider, api_key: apiKey, is_active: true });
       }
     },
     onSuccess: () => {
@@ -55,7 +55,7 @@ export default function APIKeyManager() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.APIKey.delete(id),
+    mutationFn: (id) => apiClient.entities.APIKey.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries(['apiKeys']);
       toast.success('API key removed');

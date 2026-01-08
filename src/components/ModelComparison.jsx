@@ -1,6 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BarChart, Zap, DollarSign, Gauge } from 'lucide-react';
@@ -17,7 +17,7 @@ const MODEL_INFO = {
 export default function ModelComparison({ onSelectModel }) {
   const { data: benchmarks = [], isLoading } = useQuery({
     queryKey: ['model-benchmarks'],
-    queryFn: () => base44.entities.ModelBenchmark.list(),
+    queryFn: () => apiClient.entities.ModelBenchmark.list(),
     initialData: []
   });
 

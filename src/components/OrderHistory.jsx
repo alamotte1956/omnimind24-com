@@ -1,6 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Receipt, CheckCircle, XCircle, Clock } from 'lucide-react';
@@ -8,13 +8,13 @@ import { Receipt, CheckCircle, XCircle, Clock } from 'lucide-react';
 export default function OrderHistory() {
   const { data: user } = useQuery({
     queryKey: ['user'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => apiClient.auth.me()
   });
 
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ['orders', user?.id],
     queryFn: async () => {
-      const userOrders = await base44.entities.Order.filter({ created_by: user.email });
+      const userOrders = await apiClient.entities.Order.filter({ created_by: user.email });
       return userOrders.sort((a, b) => new Date(b.created_date) - new Date(a.created_date));
     },
     enabled: !!user

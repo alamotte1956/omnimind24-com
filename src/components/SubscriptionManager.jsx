@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -53,13 +53,13 @@ export default function SubscriptionManager({ credits }) {
 
   const { data: user } = useQuery({
     queryKey: ['user'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => apiClient.auth.me()
   });
 
   const { data: subscription } = useQuery({
     queryKey: ['subscription', user?.id],
     queryFn: async () => {
-      const subs = await base44.entities.Subscription.filter({ created_by: user.email });
+      const subs = await apiClient.entities.Subscription.filter({ created_by: user.email });
       return subs.find(s => s.status === 'active');
     },
     enabled: !!user
@@ -71,14 +71,14 @@ export default function SubscriptionManager({ credits }) {
       nextBilling.setMonth(nextBilling.getMonth() + 1);
 
       if (subscription) {
-        await base44.entities.Subscription.update(subscription.id, {
+        await apiClient.entities.Subscription.update(subscription.id, {
           plan: plan.id,
           monthly_credits: plan.credits,
           price: plan.price,
           next_billing_date: nextBilling.toISOString().split('T')[0]
         });
       } else {
-        await base44.entities.Subscription.create({
+        await apiClient.entities.Subscription.create({
           plan: plan.id,
           status: 'active',
           monthly_credits: plan.credits,
@@ -88,7 +88,7 @@ export default function SubscriptionManager({ credits }) {
         });
       }
 
-      await base44.entities.Credit.update(credits.id, {
+      await apiClient.entities.Credit.update(credits.id, {
         balance: credits.balance + plan.credits,
         total_purchased: (credits.total_purchased || 0) + plan.credits
       });
@@ -105,7 +105,7 @@ export default function SubscriptionManager({ credits }) {
 
   const cancelMutation = useMutation({
     mutationFn: async () => {
-      await base44.entities.Subscription.update(subscription.id, {
+      await apiClient.entities.Subscription.update(subscription.id, {
         status: 'cancelled'
       });
     },
@@ -117,7 +117,7 @@ export default function SubscriptionManager({ credits }) {
 
   const purchaseCreditsMutation = useMutation({
     mutationFn: async (pkg) => {
-      const order = await base44.entities.Order.create({
+      const order = await apiClient.entities.Order.create({
         amount: pkg.amount,
         price: pkg.price,
         status: 'pending',
@@ -125,12 +125,12 @@ export default function SubscriptionManager({ credits }) {
         order_id: `ORD-${Date.now()}`
       });
 
-      await base44.entities.Credit.update(credits.id, {
+      await apiClient.entities.Credit.update(credits.id, {
         balance: credits.balance + pkg.amount,
         total_purchased: (credits.total_purchased || 0) + pkg.amount
       });
 
-      await base44.entities.Order.update(order.id, { status: 'completed' });
+      await apiClient.entities.Order.update(order.id, { status: 'completed' });
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['credits']);

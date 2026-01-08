@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CreditCard, Check, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
 const CREDIT_PACKAGES = [
@@ -21,7 +21,7 @@ export default function StripeCheckout({ credits, onSuccess }) {
   const purchaseMutation = useMutation({
     mutationFn: async (pkg) => {
       // Create order record
-      const order = await base44.entities.Order.create({
+      const order = await apiClient.entities.Order.create({
         amount: pkg.amount,
         price: pkg.price,
         status: 'pending',
@@ -30,13 +30,13 @@ export default function StripeCheckout({ credits, onSuccess }) {
       });
 
       // Demo mode: Add credits immediately
-      await base44.entities.Credit.update(credits.id, {
+      await apiClient.entities.Credit.update(credits.id, {
         balance: credits.balance + pkg.amount,
         total_purchased: (credits.total_purchased || 0) + pkg.amount
       });
 
       // Mark order as completed
-      await base44.entities.Order.update(order.id, {
+      await apiClient.entities.Order.update(order.id, {
         status: 'completed'
       });
 

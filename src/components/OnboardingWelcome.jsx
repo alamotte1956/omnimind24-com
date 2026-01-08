@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Sparkles, Zap, TrendingUp, Clock, CheckCircle, X } from 'lucide-react';
@@ -14,18 +14,18 @@ export default function OnboardingWelcome() {
 
   const { data: user } = useQuery({
     queryKey: ['user'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => apiClient.auth.me()
   });
 
   const { data: orders = [] } = useQuery({
     queryKey: ['content-orders'],
-    queryFn: () => base44.entities.ContentOrder.list('-created_date')
+    queryFn: () => apiClient.entities.ContentOrder.list('-created_date')
   });
 
   const { data: credits } = useQuery({
     queryKey: ['credits'],
     queryFn: async () => {
-      const allCredits = await base44.entities.Credit.filter({ created_by: user?.email });
+      const allCredits = await apiClient.entities.Credit.filter({ created_by: user?.email });
       return allCredits[0];
     },
     enabled: !!user

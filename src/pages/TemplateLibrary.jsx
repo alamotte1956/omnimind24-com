@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,23 +64,23 @@ export default function TemplateLibrary() {
 
   const { data: user } = useQuery({
     queryKey: ['user'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => apiClient.auth.me()
   });
 
   const { data: myTemplates = [] } = useQuery({
     queryKey: ['user-templates'],
-    queryFn: () => base44.entities.UserTemplate.filter({ created_by: user?.email }, '-created_date'),
+    queryFn: () => apiClient.entities.UserTemplate.filter({ created_by: user?.email }, '-created_date'),
     enabled: !!user
   });
 
   const { data: publicTemplates = [] } = useQuery({
     queryKey: ['public-templates'],
-    queryFn: () => base44.entities.UserTemplate.filter({ is_public: true }, '-usage_count'),
+    queryFn: () => apiClient.entities.UserTemplate.filter({ is_public: true }, '-usage_count'),
     enabled: !!user
   });
 
   const createTemplateMutation = useMutation({
-    mutationFn: (data) => base44.entities.UserTemplate.create(data),
+    mutationFn: (data) => apiClient.entities.UserTemplate.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries(['user-templates']);
       queryClient.invalidateQueries(['public-templates']);
@@ -94,7 +94,7 @@ export default function TemplateLibrary() {
   });
 
   const updateTemplateMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.UserTemplate.update(id, data),
+    mutationFn: ({ id, data }) => apiClient.entities.UserTemplate.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries(['user-templates']);
       queryClient.invalidateQueries(['public-templates']);
@@ -109,7 +109,7 @@ export default function TemplateLibrary() {
   });
 
   const deleteTemplateMutation = useMutation({
-    mutationFn: (id) => base44.entities.UserTemplate.delete(id),
+    mutationFn: (id) => apiClient.entities.UserTemplate.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries(['user-templates']);
       toast.success('Template deleted');
@@ -121,7 +121,7 @@ export default function TemplateLibrary() {
 
   const toggleFavoriteMutation = useMutation({
     mutationFn: ({ id, isFavorite }) => 
-      base44.entities.UserTemplate.update(id, { is_favorite: !isFavorite }),
+      apiClient.entities.UserTemplate.update(id, { is_favorite: !isFavorite }),
     onSuccess: () => {
       queryClient.invalidateQueries(['user-templates']);
     }
@@ -129,7 +129,7 @@ export default function TemplateLibrary() {
 
   const toggleFeaturedMutation = useMutation({
     mutationFn: ({ id, isFeatured }) => 
-      base44.entities.UserTemplate.update(id, { is_featured: !isFeatured }),
+      apiClient.entities.UserTemplate.update(id, { is_featured: !isFeatured }),
     onSuccess: () => {
       queryClient.invalidateQueries(['user-templates']);
       queryClient.invalidateQueries(['public-templates']);
@@ -140,7 +140,7 @@ export default function TemplateLibrary() {
   const duplicateTemplateMutation = useMutation({
     mutationFn: async (template) => {
       const { id: _id, created_date: _created_date, updated_date: _updated_date, created_by: _created_by, usage_count: _usage_count, ...templateData } = template;
-      return base44.entities.UserTemplate.create({
+      return apiClient.entities.UserTemplate.create({
         ...templateData,
         name: `${template.name} (Copy)`,
         is_public: false,

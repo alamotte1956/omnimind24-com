@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -113,7 +113,7 @@ export default function InteractiveTutorial() {
 
   const { data: user } = useQuery({
     queryKey: ['user'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => apiClient.auth.me()
   });
 
   useEffect(() => {
@@ -124,7 +124,7 @@ export default function InteractiveTutorial() {
   }, [user]);
 
   const completeTutorialMutation = useMutation({
-    mutationFn: () => base44.auth.updateMe({ tutorial_completed: true }),
+    mutationFn: () => apiClient.auth.updateMe({ tutorial_completed: true }),
     onSuccess: () => {
       queryClient.invalidateQueries(['user']);
       toast.success('Tutorial completed! Welcome to OmniMind24 🎉');

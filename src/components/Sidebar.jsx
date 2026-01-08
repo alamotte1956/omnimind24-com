@@ -4,14 +4,14 @@ import { createPageUrl } from '../utils';
 import { Home, Settings, Shield, CheckSquare, Sparkles, Coins, History, Gift, BarChart3, LogOut, FolderOpen } from 'lucide-react';
 import { cn } from "@/lib/utils";
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 import CreditBalance from './CreditBalance';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function Sidebar({ currentPage }) {
   const { data: user } = useQuery({
     queryKey: ['user'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => apiClient.auth.me()
   });
 
   const userRole = user?.access_level || 'user';
@@ -145,7 +145,7 @@ export default function Sidebar({ currentPage }) {
         <Tooltip>
           <TooltipTrigger asChild>
             <button
-              onClick={() => base44.auth.logout()}
+              onClick={() => apiClient.auth.logout()}
               className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-all"
             >
               <LogOut className="w-5 h-5" />

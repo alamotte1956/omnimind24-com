@@ -1,15 +1,21 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 import { Loader2 } from 'lucide-react';
 
+/**
+ * OnboardingGuard - Ensures users complete onboarding (COSTAR)
+ * 
+ * TODO: Backend API needed:
+ * - GET /api/auth/me - Should return user with costar_completed flag
+ */
 export default function OnboardingGuard({ children }) {
   const navigate = useNavigate();
 
   const { data: user, isLoading } = useQuery({
     queryKey: ['user'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => apiClient.auth.me()
   });
 
   useEffect(() => {

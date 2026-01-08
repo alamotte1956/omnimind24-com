@@ -1,16 +1,16 @@
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 import { AlertCircle } from 'lucide-react';
 
 export function usePermissions() {
   const { data: user } = useQuery({
     queryKey: ['user'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => apiClient.auth.me()
   });
 
   const { data: customRole } = useQuery({
     queryKey: ['user-role', user?.custom_role_id],
-    queryFn: () => base44.entities.Role.filter({ id: user.custom_role_id }),
+    queryFn: () => apiClient.entities.Role.filter({ id: user.custom_role_id }),
     enabled: !!user?.custom_role_id,
     select: (data) => data[0]
   });

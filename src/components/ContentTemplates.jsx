@@ -1,6 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -66,12 +66,12 @@ const TEMPLATES = [
 export default function ContentTemplates({ onSelectTemplate }) {
   const { data: user } = useQuery({
     queryKey: ['user'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => apiClient.auth.me()
   });
 
   const { data: userTemplates = [] } = useQuery({
     queryKey: ['user-templates-quick'],
-    queryFn: () => base44.entities.UserTemplate.filter({ created_by: user?.email }, '-usage_count', 10),
+    queryFn: () => apiClient.entities.UserTemplate.filter({ created_by: user?.email }, '-usage_count', 10),
     enabled: !!user
   });
 

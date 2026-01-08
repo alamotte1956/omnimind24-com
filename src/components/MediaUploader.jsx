@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Upload, X, Image, FileText, Video, Music, Loader2, CheckCircle } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 import { toast } from 'sonner';
 import { cn } from "@/lib/utils";
 
@@ -87,7 +87,7 @@ export default function MediaUploader({ onFilesUploaded, maxFiles = 10 }) {
         const formData = new FormData();
         formData.append('file', fileData.file);
         
-        const response = await base44.functions.invoke('uploadToS3', formData);
+        const response = await apiClient.functions.invoke('uploadToS3', formData);
         const file_url = response.data.file_url;
 
         uploadedUrls.push(file_url);

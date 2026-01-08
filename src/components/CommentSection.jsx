@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { MessageSquare, Send, CheckCircle, User } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -15,18 +15,18 @@ export default function CommentSection({ contentOrderId }) {
 
   const { data: user } = useQuery({
     queryKey: ['user'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => apiClient.auth.me()
   });
 
   const { data: comments = [], isLoading } = useQuery({
     queryKey: ['content-comments', contentOrderId],
-    queryFn: () => base44.entities.ContentComment.filter({ content_order_id: contentOrderId }, '-created_date'),
+    queryFn: () => apiClient.entities.ContentComment.filter({ content_order_id: contentOrderId }, '-created_date'),
     initialData: []
   });
 
   const addCommentMutation = useMutation({
     mutationFn: async (data) => {
-      return await base44.entities.ContentComment.create(data);
+      return await apiClient.entities.ContentComment.create(data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['content-comments', contentOrderId]);
@@ -40,7 +40,7 @@ export default function CommentSection({ contentOrderId }) {
 
   const resolveCommentMutation = useMutation({
     mutationFn: async (commentId) => {
-      return await base44.entities.ContentComment.update(commentId, { is_resolved: true });
+      return await apiClient.entities.ContentComment.update(commentId, { is_resolved: true });
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['content-comments', contentOrderId]);

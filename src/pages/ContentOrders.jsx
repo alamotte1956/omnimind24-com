@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -31,20 +31,20 @@ export default function ContentOrders() {
 
   const { data: orders = [] } = useQuery({
     queryKey: ['content-orders'],
-    queryFn: () => base44.entities.ContentOrder.list('-created_date')
+    queryFn: () => apiClient.entities.ContentOrder.list('-created_date')
   });
 
 
 
   const { data: user } = useQuery({
     queryKey: ['user'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => apiClient.auth.me()
   });
 
   const { data: credits } = useQuery({
     queryKey: ['credits'],
     queryFn: async () => {
-      const allCredits = await base44.entities.Credit.filter({ created_by: user?.email });
+      const allCredits = await apiClient.entities.Credit.filter({ created_by: user?.email });
       return allCredits[0];
     },
     enabled: !!user && user.access_level !== 'staff' && user.access_level !== 'admin'
@@ -63,13 +63,13 @@ export default function ContentOrders() {
         }
 
         // Deduct credits immediately
-        await base44.entities.Credit.update(credits.id, {
+        await apiClient.entities.Credit.update(credits.id, {
           balance: credits.balance - creditCost,
           total_used: (credits.total_used || 0) + creditCost
         });
 
         // Create transaction record
-        await base44.entities.CreditTransaction.create({
+        await apiClient.entities.CreditTransaction.create({
           transaction_type: 'usage',
           amount: -creditCost,
           description: `Content generation: ${data.task_type}`,
@@ -80,24 +80,24 @@ export default function ContentOrders() {
         // Auto-generate title if not provided
         const title = data.title || `${data.task_type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())} - ${new Date().toLocaleDateString()}`;
         
-        const order = await base44.entities.ContentOrder.create({
+        const order = await apiClient.entities.ContentOrder.create({
           ...data,
           title
         });
 
         // Send order confirmation email
-        await base44.functions.invoke('sendResendEmail', {
+        await apiClient.functions.invoke('sendResendEmail', {
           to: user.email,
           subject: 'Order Placed - OmniMind24',
           body: `Hi ${user.full_name || 'there'},\n\nYour content order has been placed successfully!\n\nOrder Details:\n- Type: ${data.task_type}\n- Credits Used: ${creditCost}\n- Remaining Balance: ${credits.balance - creditCost} credits\n\nYour content is being generated and will be ready soon.\n\nThank you for using OmniMind24!`,
           from_name: 'OmniMind24'
         });
       try {
-        await base44.functions.invoke('processOrder', { order_id: order.id });
+        await apiClient.functions.invoke('processOrder', { order_id: order.id });
       } catch (error) {
         // Error handled by toast notification
         // Mark as failed if processing fails
-        await base44.entities.ContentOrder.update(order.id, {
+        await apiClient.entities.ContentOrder.update(order.id, {
           status: 'failed',
           output_content: `Processing failed: ${error.message}`
         });

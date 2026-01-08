@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,13 +28,13 @@ export default function FineTuneManager() {
 
   const { data: user } = useQuery({
     queryKey: ['user'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => apiClient.auth.me()
   });
 
   const { data: apiKeys = [] } = useQuery({
     queryKey: ['apiKeys', user?.id],
     queryFn: async () => {
-      const keys = await base44.entities.APIKey.filter({ created_by: user.email });
+      const keys = await apiClient.entities.APIKey.filter({ created_by: user.email });
       return keys;
     },
     enabled: !!user
@@ -42,13 +42,13 @@ export default function FineTuneManager() {
 
   const { data: fineTunedModels = [] } = useQuery({
     queryKey: ['fineTunedModels'],
-    queryFn: () => base44.entities.FineTunedModel.list('-created_date'),
+    queryFn: () => apiClient.entities.FineTunedModel.list('-created_date'),
     enabled: !!user
   });
 
   const uploadMutation = useMutation({
     mutationFn: async (file) => {
-      const response = await base44.integrations.Core.UploadFile({ file });
+      const response = await apiClient.integrations.Core.UploadFile({ file });
       return response.file_url;
     },
     onSuccess: (fileUrl) => {
@@ -64,7 +64,7 @@ export default function FineTuneManager() {
     mutationFn: async (data) => {
       const fileUrl = await uploadMutation.mutateAsync(trainingFile);
       
-      const model = await base44.entities.FineTunedModel.create({
+      const model = await apiClient.entities.FineTunedModel.create({
         model_name: data.modelName,
         provider: data.provider,
         base_model: data.baseModel,
@@ -73,7 +73,7 @@ export default function FineTuneManager() {
         status: 'uploading'
       });
 
-      await base44.functions.invoke('startFineTuning', {
+      await apiClient.functions.invoke('startFineTuning', {
         fine_tune_id: model.id,
         provider: data.provider,
         base_model: data.baseModel,
@@ -94,7 +94,7 @@ export default function FineTuneManager() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => base44.entities.FineTunedModel.delete(id),
+    mutationFn: (id) => apiClient.entities.FineTunedModel.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries(['fineTunedModels']);
       toast.success('Fine-tuned model deleted');
@@ -103,7 +103,7 @@ export default function FineTuneManager() {
 
   const toggleActiveMutation = useMutation({
     mutationFn: ({ id, isActive }) => 
-      base44.entities.FineTunedModel.update(id, { is_active: !isActive }),
+      apiClient.entities.FineTunedModel.update(id, { is_active: !isActive }),
     onSuccess: () => {
       queryClient.invalidateQueries(['fineTunedModels']);
       toast.success('Model status updated');

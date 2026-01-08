@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 import { Button } from "@/components/ui/button";
 import { RefreshCw, Loader2 } from 'lucide-react';
 import AuthGuard from '../components/AuthGuard';
@@ -11,18 +11,25 @@ import ModelMonitoring from '../components/ModelMonitoring';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from 'sonner';
 
+/**
+ * Models Page - AI model management
+ * 
+ * TODO: Backend API needed:
+ * - GET /api/auth/me - Get current user
+ * - POST /api/functions/syncRealTimeBenchmarks - Sync benchmarks from ArtificialAnalysis.ai
+ */
 export default function Models() {
   const queryClient = useQueryClient();
 
   const { data: user } = useQuery({
     queryKey: ['user'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => apiClient.auth.me()
   });
 
   const isAdmin = user?.access_level === 'admin';
 
   const updateBenchmarksMutation = useMutation({
-    mutationFn: () => base44.functions.invoke('syncRealTimeBenchmarks'),
+    mutationFn: () => apiClient.functions.invoke('syncRealTimeBenchmarks'),
     onSuccess: () => {
       queryClient.invalidateQueries(['model-benchmarks']);
       toast.success('Real-time benchmarks synced from ArtificialAnalysis.ai');
