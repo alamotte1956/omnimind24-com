@@ -2,6 +2,8 @@
  * Input sanitization utilities to prevent XSS and injection attacks
  */
 
+import { useState, useCallback } from 'react';
+
 // HTML sanitization using a simple whitelist approach
 export const sanitizeHTML = (html) => {
   if (typeof html !== 'string') return '';
@@ -131,9 +133,9 @@ export const sanitize = (input, options = {}) => {
 
 // React Hook for sanitizing input
 export const useSanitizedInput = (initialValue, options = {}) => {
-  const [value, setValue] = React.useState(() => sanitize(initialValue, options));
+  const [value, setValue] = useState(() => sanitize(initialValue, options));
   
-  const setSanitizedValue = React.useCallback((newValue) => {
+  const setSanitizedValue = useCallback((newValue) => {
     setValue(sanitize(newValue, options));
   }, [options]);
   

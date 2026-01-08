@@ -22,7 +22,7 @@ export default function RoleGuard({ children, allowedRoles = ['admin', 'staff', 
           <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
           <h2 className="text-2xl font-bold text-white mb-2">Access Denied</h2>
           <p className="text-gray-400">
-            You don't have permission to access this section. 
+            You don&apos;t have permission to access this section. 
             {userRole === 'user' && ' Contact an administrator for access.'}
           </p>
         </div>

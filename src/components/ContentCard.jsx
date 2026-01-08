@@ -5,12 +5,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Copy, CheckCircle, Loader2, MessageSquare, Star, 
   FolderOpen, Tag, Edit, Trash2, MoreVertical, X, Download, RefreshCw, Search,
-  FileText, Music, Video
+  FileText, Music
 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import ShareContentDialog from './ShareContentDialog';
@@ -70,24 +70,24 @@ export default function ContentCard({ order, onCommentClick, onCancel }) {
     } else if (['pdf', 'docx', 'pptx'].includes(format)) {
       toast.loading(`Generating ${format.toUpperCase()}...`);
       try {
-        const response = await base44.functions.invoke('exportContent', {
+        const _response = await base44.functions.invoke('exportContent', {
           content_order_id: order.id,
           format: format
         });
         
         toast.success(`${format.toUpperCase()} generated! Check your email for the download link.`);
-      } catch (error) {
+      } catch {
         toast.error(`Failed to generate ${format.toUpperCase()}`);
       }
     } else if (format === 'mp3') {
       toast.loading('Generating audio...');
       try {
-        const response = await base44.functions.invoke('exportAudio', {
+        const _response = await base44.functions.invoke('exportAudio', {
           content_order_id: order.id
         });
         
         toast.success('Audio generated! Check your email for the download link.');
-      } catch (error) {
+      } catch {
         toast.error('Failed to generate audio');
       }
     }

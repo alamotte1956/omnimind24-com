@@ -86,7 +86,7 @@ export default function PermissionGuard({ children, permission, permissions, req
           <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
           <h3 className="text-xl font-bold text-white mb-2">Access Denied</h3>
           <p className="text-gray-400">
-            You don't have permission to access this feature.
+            You don&apos;t have permission to access this feature.
           </p>
         </div>
       </div>

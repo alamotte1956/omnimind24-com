@@ -9,8 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Search, 
   TrendingUp, 
-  CheckCircle2, 
-  AlertTriangle, 
+  
+  
   Copy,
   Loader2,
   Link as LinkIcon,

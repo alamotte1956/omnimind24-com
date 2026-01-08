@@ -2,6 +2,8 @@
  * Performance monitoring utilities
  */
 
+import { useRef, useEffect, memo } from 'react';
+
 // Performance monitoring singleton
 class PerformanceMonitor {
   constructor() {
@@ -94,9 +96,9 @@ const performanceMonitor = new PerformanceMonitor();
 
 // React Hook for performance monitoring
 export const usePerformanceMonitor = (componentName) => {
-  const renderCount = React.useRef(0);
+  const renderCount = useRef(0);
 
-  React.useEffect(() => {
+  useEffect(() => {
     performanceMonitor.startRender(componentName);
     
     return () => {
@@ -113,8 +115,8 @@ export const usePerformanceMonitor = (componentName) => {
 
 // Higher-order component for performance monitoring
 export const withPerformanceMonitoring = (WrappedComponent, componentName) => {
-  const MonitoredComponent = React.memo((props) => {
-    React.useEffect(() => {
+  const MonitoredComponent = memo((props) => {
+    useEffect(() => {
       performanceMonitor.startRender(componentName);
       
       return () => {
@@ -149,7 +151,7 @@ export const detectMemoryLeaks = () => {
 export const useDebounce = (value, delay) => {
   const [debouncedValue, setDebouncedValue] = React.useState(value);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedValue(value);
     }, delay);
@@ -164,7 +166,7 @@ export const useDebounce = (value, delay) => {
 
 // Throttle utility for performance
 export const useThrottle = (callback, delay) => {
-  const lastRun = React.useRef(Date.now());
+  const lastRun = useRef(Date.now());
 
   return React.useCallback((...args) => {
     if (Date.now() - lastRun.current >= delay) {
@@ -206,7 +208,7 @@ export const useIntersectionObserver = (options = {}) => {
   const [entries, setEntries] = React.useState([]);
   const [ref, setRef] = React.useState(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!ref) return;
 
     const observer = new IntersectionObserver((entries) => {
@@ -248,7 +250,7 @@ export const useImageOptimization = () => {
 export { performanceMonitor };
 
 // Development-only performance logging
-if (process.env.NODE_ENV === 'development') {
+if (import.meta.env.DEV) {
   // Log performance metrics every 30 seconds
   setInterval(() => {
     performanceMonitor.logSummary();
