@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
 import { Home, Settings, MessageSquare, Shield, CheckSquare, Sparkles, Coins, History, Gift, Library, BarChart3, LogOut, FolderOpen } from 'lucide-react';
