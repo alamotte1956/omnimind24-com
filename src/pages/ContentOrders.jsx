@@ -52,10 +52,11 @@ export default function ContentOrders() {
 
   const createOrderMutation = useMutation({
     mutationFn: async (data) => {
+      const creditCost = selectedCreditCost || 20;
+      
       // Check if user has enough credits (staff/admin have unlimited)
       if (user?.access_level !== 'staff' && user?.access_level !== 'admin') {
-        const creditCost = selectedCreditCost || 20;
-        const remainingBalance = (credits?.balance || 0) - selectedCreditCost;
+        const remainingBalance = (credits?.balance || 0) - creditCost;
 
         if (remainingBalance < 0) {
           throw new Error('Insufficient credits. Please purchase more credits to continue.');

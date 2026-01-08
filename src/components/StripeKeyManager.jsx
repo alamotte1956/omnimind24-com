@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CreditCard, AlertTriangle, Shield, Copy, Eye, EyeOff } from 'lucide-react';
+import { CreditCard, AlertTriangle, Shield, Copy, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 
 // Enhanced validation regex patterns

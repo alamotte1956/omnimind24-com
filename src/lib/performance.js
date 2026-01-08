@@ -2,7 +2,7 @@
  * Performance monitoring utilities
  */
 
-import { useRef, useEffect, memo } from 'react';
+import { useRef, useEffect, memo, useState, useCallback, useMemo } from 'react';
 
 // Performance monitoring singleton
 class PerformanceMonitor {
@@ -149,7 +149,7 @@ export const detectMemoryLeaks = () => {
 
 // Debounce utility to prevent excessive renders
 export const useDebounce = (value, delay) => {
-  const [debouncedValue, setDebouncedValue] = React.useState(value);
+  const [debouncedValue, setDebouncedValue] = useState(value);
 
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -168,7 +168,7 @@ export const useDebounce = (value, delay) => {
 export const useThrottle = (callback, delay) => {
   const lastRun = useRef(Date.now());
 
-  return React.useCallback((...args) => {
+  return useCallback((...args) => {
     if (Date.now() - lastRun.current >= delay) {
       callback(...args);
       lastRun.current = Date.now();
@@ -178,9 +178,9 @@ export const useThrottle = (callback, delay) => {
 
 // Virtual scroll hook for large lists
 export const useVirtualScroll = (items, itemHeight, containerHeight) => {
-  const [scrollTop, setScrollTop] = React.useState(0);
+  const [scrollTop, setScrollTop] = useState(0);
 
-  const visibleItems = React.useMemo(() => {
+  const visibleItems = useMemo(() => {
     const startIndex = Math.floor(scrollTop / itemHeight);
     const endIndex = Math.min(
       startIndex + Math.ceil(containerHeight / itemHeight) + 1,
@@ -205,8 +205,8 @@ export const useVirtualScroll = (items, itemHeight, containerHeight) => {
 
 // Intersection Observer hook for lazy loading
 export const useIntersectionObserver = (options = {}) => {
-  const [entries, setEntries] = React.useState([]);
-  const [ref, setRef] = React.useState(null);
+  const [entries, setEntries] = useState([]);
+  const [ref, setRef] = useState(null);
 
   useEffect(() => {
     if (!ref) return;
@@ -227,9 +227,9 @@ export const useIntersectionObserver = (options = {}) => {
 
 // Performance optimization for images
 export const useImageOptimization = () => {
-  const [loadedImages, setLoadedImages] = React.useState(new Set());
+  const [loadedImages, setLoadedImages] = useState(new Set());
 
-  const loadImage = React.useCallback((src) => {
+  const loadImage = useCallback((src) => {
     if (loadedImages.has(src)) return Promise.resolve();
 
     return new Promise((resolve, reject) => {
