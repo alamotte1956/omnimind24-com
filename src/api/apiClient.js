@@ -188,6 +188,21 @@ function createEntity(name) {
       return client.get(endpoint);
     },
     
+    // Filter with criteria (backward compatibility with Base44)
+    filter: async (criteria = {}, sort) => {
+      const params = new URLSearchParams();
+      
+      if (Object.keys(criteria).length > 0) {
+        params.append('filter', JSON.stringify(criteria));
+      }
+      if (sort) params.append('sort', sort);
+      
+      const queryString = params.toString();
+      const endpoint = queryString ? `${basePath}?${queryString}` : basePath;
+      
+      return client.get(endpoint);
+    },
+    
     // List with sort (backward compatibility with Base44)
     list: async (sort, limit) => {
       const params = new URLSearchParams();
