@@ -1,13 +1,13 @@
 # OmniMind24 Frontend Application
 
-A modern, secure, and performant React frontend for the OmniMind24 business intelligence orchestrator.
+A modern, secure, and performant standalone React frontend for the OmniMind24 business intelligence orchestrator.
 
 ## 🚀 Features
 
 ### Core Functionality
 - **Business Intelligence Dashboard**: Real-time analytics and insights
 - **AI-Powered Content Generation**: Multi-provider AI integration (OpenAI, Anthropic, Google Gemini)
-- **User Management**: Role-based access control with authentication
+- **User Management**: Role-based access control with JWT authentication
 - **Payment Processing**: Stripe integration for subscriptions and credits
 - **Template Library**: Dynamic content templates with virtualization
 - **Admin Panel**: Comprehensive administration interface
@@ -16,13 +16,14 @@ A modern, secure, and performant React frontend for the OmniMind24 business inte
 - **Input Sanitization**: Comprehensive XSS and injection prevention
 - **Secure Key Management**: Enhanced Stripe key handling
 - **Error Handling**: Sanitized error messages without information leakage
-- **Authentication**: Base44 SDK integration with secure auth flows
+- **Authentication**: JWT-based authentication with secure token storage
 
 ### Performance Optimizations
 - **Virtual Scrolling**: Efficient handling of large datasets
 - **Component Optimization**: React.memo, useCallback, useMemo implementations
 - **Memory Management**: Proper cleanup and leak prevention
 - **Performance Monitoring**: Real-time performance tracking
+- **Optimized Bundle**: ~39KB smaller after removing Base44 SDK
 
 ### Accessibility
 - **WCAG Compliant**: Full keyboard navigation and screen reader support
@@ -50,7 +51,7 @@ A modern, secure, and performant React frontend for the OmniMind24 business inte
 - **Recharts**: Data visualization
 
 ### Integration
-- **Base44 SDK**: Backend integration
+- **Custom API Client**: Lightweight fetch-based HTTP client
 - **Stripe**: Payment processing
 - **React Router**: Client-side routing
 
@@ -59,12 +60,13 @@ A modern, secure, and performant React frontend for the OmniMind24 business inte
 ### Prerequisites
 - Node.js 18+ 
 - npm or yarn
+- Backend API server (see Backend Requirements below)
 
 ### Setup
 ```bash
 # Clone the repository
-git clone https://github.com/alamotte1956/omnimind24-frontend.git
-cd omnimind24-frontend
+git clone https://github.com/alamotte1956/omnimind24-com.git
+cd omnimind24-com
 
 # Install dependencies
 npm install
@@ -76,21 +78,40 @@ cp .env.example .env.local
 
 ### Environment Variables
 ```env
-# Base44 Configuration
-VITE_BASE44_APP_ID=6948a16137ff8a8e50ada4e6
-VITE_BASE44_API_URL=https://api.base44.com
+# API Configuration
+VITE_API_BASE_URL=http://localhost:3000/api
+
+# Authentication
+VITE_JWT_SECRET=your-jwt-secret-here
+
+# OpenAI Configuration
+VITE_OPENAI_API_KEY=sk-your-openai-key-here
+
+# Anthropic Configuration
+VITE_ANTHROPIC_API_KEY=sk-ant-your-anthropic-key-here
+
+# Google AI Configuration
+VITE_GOOGLE_AI_API_KEY=your-google-ai-key-here
 
 # Stripe Configuration
-VITE_STRIPE_PUBLISHABLE_KEY=pk_live_...
-VITE_STRIPE_WEBHOOK_SECRET=whsec_...
+VITE_STRIPE_PUBLIC_KEY=pk_test_your-stripe-public-key-here
 
-# AI Provider Keys
-VITE_OPENAI_API_KEY=sk_...
-VITE_ANTHROPIC_API_KEY=sk-ant-...
-VITE_GOOGLE_AI_API_KEY=...
+# AWS S3 Configuration (for file uploads)
+VITE_AWS_S3_BUCKET=your-bucket-name
+VITE_AWS_ACCESS_KEY_ID=your-access-key-id
+VITE_AWS_SECRET_ACCESS_KEY=your-secret-access-key
+VITE_AWS_REGION=us-east-1
+
+# SendGrid Configuration (for emails)
+VITE_SENDGRID_API_KEY=SG.your-sendgrid-api-key-here
+VITE_SENDGRID_FROM_EMAIL=noreply@omnimind24.com
 
 # Optional
 VITE_GOOGLE_ANALYTICS_ID=G-XXXXXXXXXX
+
+# Application Settings
+VITE_APP_NAME=OmniMind24
+VITE_APP_URL=http://localhost:5173
 ```
 
 ## 🚀 Development
@@ -247,33 +268,59 @@ Comprehensive ARIA label support:
 </div>
 ```
 
-## 🔄 Base44 Integration
+## 🔌 Backend API Requirements
 
-This frontend is designed to integrate seamlessly with Base44.com:
+This frontend requires a backend API server at `VITE_API_BASE_URL` (default: `http://localhost:3000/api`).
 
-### Authentication
-Uses Base44 SDK for authentication:
+### Required Endpoints
+
+#### Authentication
+- `POST /api/auth/login` - User login with email/password
+- `POST /api/auth/register` - User registration
+- `GET /api/auth/me` - Get current authenticated user
+- `POST /api/auth/refresh` - Refresh JWT token
+- `POST /api/auth/logout` - Logout (optional)
+
+#### Entities
+For each entity (users, documents, orders, credits, etc.):
+- `GET /api/{entity}` - List entities (supports `?sort=`, `?limit=`, `?filter=`)
+- `GET /api/{entity}/:id` - Get entity by ID
+- `POST /api/{entity}` - Create entity
+- `PUT /api/{entity}/:id` - Update entity
+- `PATCH /api/{entity}/:id` - Partial update
+- `DELETE /api/{entity}/:id` - Delete entity
+
+#### Functions
+- `POST /api/functions/:name` - Invoke backend function
+
+#### Integrations
+- `POST /api/integrations/llm` - Invoke LLM (OpenAI, Anthropic)
+- `POST /api/integrations/email` - Send email via SendGrid
+- `POST /api/integrations/upload` - Upload file to S3
+- `POST /api/integrations/image` - Generate image with DALL-E
+
+### API Client Usage
 
 ```javascript
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 
 // Get current user
-const user = await base44.auth.me();
+const user = await apiClient.auth.me();
 
-// Redirect to login
-base44.auth.redirectToLogin(returnPath);
+// Login
+const response = await apiClient.auth.login(email, password);
+
+// Query entities
+const orders = await apiClient.entities.ContentOrder.list('-created_date');
+
+// Create entity
+await apiClient.entities.Document.create(data);
+
+// Invoke function
+await apiClient.functions.invoke('chatWithLLM', params);
 ```
 
-### Data Operations
-Base44 entity operations:
-
-```javascript
-// Query data
-const users = await base44.from('users').select('*');
-
-// Mutate data
-await base44.from('templates').insert(newTemplate);
-```
+See [MIGRATION_GUIDE.md](./MIGRATION_GUIDE.md) for complete API documentation.
 
 ## 🚀 Deployment
 
@@ -283,12 +330,15 @@ await base44.from('templates').insert(newTemplate);
 npm run build
 ```
 
-2. Deploy the `dist/` folder to your hosting provider
+2. Deploy the `dist/` folder to your hosting provider (Netlify, Vercel, AWS S3, etc.)
 
-### Base44 Integration
-1. Connect your Base44 project to this frontend
-2. Configure environment variables in Base44
-3. Deploy and test the integration
+3. Configure environment variables in your hosting provider
+
+### Backend Deployment
+1. Deploy your backend API server
+2. Update `VITE_API_BASE_URL` to point to production API
+3. Configure CORS to allow your frontend domain
+4. Set up SSL/TLS certificates
 
 ## 📊 Monitoring
 

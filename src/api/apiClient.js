@@ -73,7 +73,8 @@ class ApiClient {
         const data = await response.json();
         error.data = data;
         error.message = data.message || data.error || 'Request failed';
-      } catch (e) {
+      } catch {
+        // If JSON parsing fails, use default error message
         error.message = `Request failed with status ${response.status}`;
       }
       
