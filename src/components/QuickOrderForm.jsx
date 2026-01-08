@@ -5,22 +5,11 @@ import { Zap } from 'lucide-react';
 import MediaUploader from './MediaUploader';
 
 
-export default function QuickOrderForm({ initialPrompt: _initialPrompt = '', taskType, onSubmit, isLoading: _isLoading }) {
+export default function QuickOrderForm({ initialPrompt: _initialPrompt = '', taskType: _taskType, onSubmit: _onSubmit, isLoading: _isLoading }) {
   const [uploadedFileUrls, setUploadedFileUrls] = useState([]);
 
   const handleFilesUploaded = (urls) => {
     setUploadedFileUrls(urls);
-  };
-
-  const _handleSubmit = () => {
-    const orderData = {
-      task_type: taskType,
-      input_data: uploadedFileUrls.length > 0 
-        ? `Media files: ${uploadedFileUrls.join(', ')}`
-        : '',
-      status: 'processing'
-    };
-    onSubmit(orderData);
   };
 
   return (
