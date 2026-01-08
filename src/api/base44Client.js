@@ -1,8 +1,8 @@
-import { createClient } from '@base44/sdk';
-// import { getAccessToken } from '@base44/sdk/utils/auth-utils';
+/**
+ * Base44 Client - Now using custom API client
+ * This file maintained for backwards compatibility
+ */
+import { apiClient } from './client';
 
-// Create a client with authentication required
-export const base44 = createClient({
-  appId: "6948a16137ff8a8e50ada4e6", 
-  requiresAuth: true // Ensure authentication is required for all operations
-});
+// Export the custom client as base44 for backwards compatibility
+export const base44 = apiClient;

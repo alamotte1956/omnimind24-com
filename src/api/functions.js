@@ -1,71 +1,37 @@
-import { base44 } from './base44Client';
+import { apiClient } from './client';
 
-
-export const chatWithLLM = base44.functions.chatWithLLM;
-
-export const updateModelBenchmarks = base44.functions.updateModelBenchmarks;
-
-export const selectOptimalModel = base44.functions.selectOptimalModel;
-
-export const syncSalesforceTasks = base44.functions.syncSalesforceTasks;
-
-export const syncRealTimeBenchmarks = base44.functions.syncRealTimeBenchmarks;
-
-export const processOrder = base44.functions.processOrder;
-
-export const createPaymentIntent = base44.functions.createPaymentIntent;
-
-export const stripeWebhook = base44.functions.stripeWebhook;
-
-export const triggerAutoPurchase = base44.functions.triggerAutoPurchase;
-
-export const generateContentIdeas = base44.functions.generateContentIdeas;
-
-export const uploadToS3 = base44.functions.uploadToS3;
-
-export const redeemReferral = base44.functions.redeemReferral;
-
-export const sendResendEmail = base44.functions.sendResendEmail;
-
-export const resetOnboarding = base44.functions.resetOnboarding;
-
-export const analyzeSEO = base44.functions.analyzeSEO;
-
-export const startFineTuning = base44.functions.startFineTuning;
-
-export const makeStaff = base44.functions.makeStaff;
-
-export const testElevenlabs = base44.functions.testElevenlabs;
-
-export const testTavily = base44.functions.testTavily;
-
-export const testStripe = base44.functions.testStripe;
-
-export const exportContent = base44.functions.exportContent;
-
-export const exportAudio = base44.functions.exportAudio;
-
-export const generateSalesSheet = base44.functions.generateSalesSheet;
-
-export const generateTechnicalSheet = base44.functions.generateTechnicalSheet;
-
-export const supportChatbot = base44.functions.supportChatbot;
-
-export const createPaymentIntentx = base44.functions.createPaymentIntentx;
-
-export const stripeWebhookx = base44.functions.stripeWebhookx;
-
-export const completeTestOrder = base44.functions.completeTestOrder;
-
-export const verifyCheckoutSession = base44.functions.verifyCheckoutSession;
-
-export const makeAdmin = base44.functions.makeAdmin;
-
-export const completeOrder = base44.functions.completeOrder;
-
-export const refundOrder = base44.functions.refundOrder;
-
-export const cleanupStuckOrders = base44.functions.cleanupStuckOrders;
-
-export const rateLimitCheck = base44.functions.rateLimitCheck;
-
+// Export function wrappers
+export const chatWithLLM = apiClient.functions.chatWithLLM;
+export const updateModelBenchmarks = apiClient.functions.updateModelBenchmarks;
+export const selectOptimalModel = apiClient.functions.selectOptimalModel;
+export const syncSalesforceTasks = apiClient.functions.syncSalesforceTasks;
+export const syncRealTimeBenchmarks = apiClient.functions.syncRealTimeBenchmarks;
+export const processOrder = apiClient.functions.processOrder;
+export const createPaymentIntent = apiClient.functions.createPaymentIntent;
+export const stripeWebhook = apiClient.functions.stripeWebhook;
+export const triggerAutoPurchase = apiClient.functions.triggerAutoPurchase;
+export const generateContentIdeas = apiClient.functions.generateContentIdeas;
+export const uploadToS3 = apiClient.functions.uploadToS3;
+export const redeemReferral = apiClient.functions.redeemReferral;
+export const sendResendEmail = apiClient.functions.sendResendEmail;
+export const resetOnboarding = apiClient.functions.resetOnboarding;
+export const analyzeSEO = apiClient.functions.analyzeSEO;
+export const startFineTuning = apiClient.functions.startFineTuning;
+export const makeStaff = apiClient.functions.makeStaff;
+export const testElevenlabs = apiClient.functions.testElevenlabs;
+export const testTavily = apiClient.functions.testTavily;
+export const testStripe = apiClient.functions.testStripe;
+export const exportContent = apiClient.functions.exportContent;
+export const exportAudio = apiClient.functions.exportAudio;
+export const generateSalesSheet = apiClient.functions.generateSalesSheet;
+export const generateTechnicalSheet = apiClient.functions.generateTechnicalSheet;
+export const supportChatbot = apiClient.functions.supportChatbot;
+export const createPaymentIntentx = apiClient.functions.createPaymentIntentx;
+export const stripeWebhookx = apiClient.functions.stripeWebhookx;
+export const completeTestOrder = apiClient.functions.completeTestOrder;
+export const verifyCheckoutSession = apiClient.functions.verifyCheckoutSession;
+export const makeAdmin = apiClient.functions.makeAdmin;
+export const completeOrder = apiClient.functions.completeOrder;
+export const refundOrder = apiClient.functions.refundOrder;
+export const cleanupStuckOrders = apiClient.functions.cleanupStuckOrders;
+export const rateLimitCheck = apiClient.functions.rateLimitCheck;

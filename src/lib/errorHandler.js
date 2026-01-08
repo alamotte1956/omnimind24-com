@@ -174,19 +174,6 @@ export const ErrorFallback = ({ error, resetErrorBoundary }) => {
   );
 };
 
-// API error handler for Base44 operations
-export const handleBase44Error = (error, operation) => {
-  // Specific handling for Base44 authentication errors
-  if (error.message?.includes('auth') || error.response?.status === 401) {
-    // Redirect to login if needed
-    if (typeof window !== 'undefined' && window.base44) {
-      window.base44.auth.redirectToLogin();
-    }
-  }
-  
-  return handleError(error, `Base44 ${operation}`);
-};
-
 // Form validation error handler
 export const handleValidationError = (errors) => {
   if (Array.isArray(errors)) {
