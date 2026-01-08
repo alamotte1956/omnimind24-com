@@ -17,7 +17,9 @@ const STRIPE_PATTERNS = {
 // Sanitize input to prevent XSS and injection
 const sanitizeInput = (input) => {
   if (typeof input !== 'string') return '';
-  return input.replace(/[^a-zA-Z0-9_-]/g, '').substring(0, 200);
+  // Don't strip characters - Stripe keys have specific formats
+  // Just trim whitespace and limit length
+  return input.trim().substring(0, 250);
 };
 
 // Rate limiting to prevent abuse
@@ -136,7 +138,7 @@ VITE_STRIPE_PUBLISHABLE_KEY=${sanitizedPublishable}
     });
   };
 
-  const handleKeyChange = (setter, keyType) => (e) => {
+  const handleKeyChange = (setter) => (e) => {
     const value = sanitizeInput(e.target.value);
     setter(value);
   };
@@ -173,7 +175,7 @@ VITE_STRIPE_PUBLISHABLE_KEY=${sanitizedPublishable}
             <Input
               type={showSecretKey ? "text" : "password"}
               value={secretKey}
-              onChange={handleKeyChange(setSecretKey, 'secret')}
+              onChange={handleKeyChange(setSecretKey)}
               placeholder="sk_live_... or rk_live_..."
               className="bg-[#0D0D0D] border-gray-700 text-white mt-2"
               disabled={isSubmitting}
@@ -189,7 +191,7 @@ VITE_STRIPE_PUBLISHABLE_KEY=${sanitizedPublishable}
             <Input
               type="text"
               value={publishableKey}
-              onChange={handleKeyChange(setPublishableKey, 'publishable')}
+              onChange={handleKeyChange(setPublishableKey)}
               placeholder="pk_live_... or pk_test_..."
               className="bg-[#0D0D0D] border-gray-700 text-white mt-2"
               disabled={isSubmitting}
@@ -211,7 +213,7 @@ VITE_STRIPE_PUBLISHABLE_KEY=${sanitizedPublishable}
             <Input
               type={showWebhookSecret ? "text" : "password"}
               value={webhookSecret}
-              onChange={handleKeyChange(setWebhookSecret, 'webhook')}
+              onChange={handleKeyChange(setWebhookSecret)}
               placeholder="whsec_..."
               className="bg-[#0D0D0D] border-gray-700 text-white mt-2"
               disabled={isSubmitting}

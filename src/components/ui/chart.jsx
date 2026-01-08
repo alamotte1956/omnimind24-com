@@ -40,8 +40,8 @@ function sanitizeCssColor(input) {
     return v;
   if (/^var\(--[a-zA-Z0-9_-]+\)$/.test(v)) return v;
 
-  // reject everything else
-  return "";
+  // Return fallback color instead of empty string
+  return "hsl(var(--foreground))";
 }
 
 function getThemeName() {

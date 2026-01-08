@@ -64,8 +64,8 @@ class PerformanceMonitor {
     
     const metrics = this.getMetrics();
     const slowComponents = Object.entries(metrics)
-      .filter(([_, metric]) => metric.lastRenderTime > 16.67)
-      .sort(([_, a], [__, b]) => b.lastRenderTime - a.lastRenderTime);
+      .filter(([, metric]) => metric.lastRenderTime > 16.67)
+      .sort(([, a], [, b]) => b.lastRenderTime - a.lastRenderTime);
 
     if (slowComponents.length > 0) {
       console.group('🚨 Performance Issues Detected');
@@ -131,20 +131,22 @@ export const withPerformanceMonitoring = (WrappedComponent, componentName) => {
   return MonitoredComponent;
 };
 
-// Utility to detect memory leaks
-export const detectMemoryLeaks = () => {
-  if (!performance.memory) return;
+// Hook to detect memory leaks
+export const useMemoryLeakDetector = () => {
+  useEffect(() => {
+    if (!performance.memory) return;
 
-  const initialMemory = performance.memory.usedJSHeapSize;
-  
-  return () => {
-    const currentMemory = performance.memory.usedJSHeapSize;
-    const memoryIncrease = currentMemory - initialMemory;
+    const initialMemory = performance.memory.usedJSHeapSize;
     
-    if (memoryIncrease > 10 * 1024 * 1024) { // 10MB increase
-      console.warn(`🔍 Potential memory leak detected: ${(memoryIncrease / 1024 / 1024).toFixed(2)} MB increase`);
-    }
-  };
+    return () => {
+      const currentMemory = performance.memory.usedJSHeapSize;
+      const memoryIncrease = currentMemory - initialMemory;
+      
+      if (memoryIncrease > 10 * 1024 * 1024) { // 10MB increase
+        console.warn(`🔍 Potential memory leak detected: ${(memoryIncrease / 1024 / 1024).toFixed(2)} MB increase`);
+      }
+    };
+  }, []);
 };
 
 // Debounce utility to prevent excessive renders

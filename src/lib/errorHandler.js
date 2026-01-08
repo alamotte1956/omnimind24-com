@@ -31,29 +31,52 @@ const getErrorType = (error) => {
   return ErrorTypes.UNKNOWN;
 };
 
+// Whitelist of safe error messages
+const SAFE_ERROR_MESSAGES = {
+  NETWORK: 'Network connection failed. Please check your internet connection.',
+  AUTHENTICATION: 'Authentication failed. Please log in again.',
+  AUTHORIZATION: 'You do not have permission to perform this action.',
+  VALIDATION: 'Invalid data provided. Please check your input.',
+  SERVER: 'A server error occurred. Please try again later.',
+  UNKNOWN: 'An error occurred. Please try again.'
+};
+
 // Sanitize error messages to prevent information leakage
 const sanitizeErrorMessage = (error, errorType) => {
-  // Don't expose sensitive server error details to users
+  // Use whitelisted messages for server errors
   if (errorType === ErrorTypes.SERVER) {
-    return 'A server error occurred. Please try again later.';
+    return SAFE_ERROR_MESSAGES.SERVER;
   }
   
   // Sanitize network errors
   if (errorType === ErrorTypes.NETWORK) {
-    return 'Network connection failed. Please check your internet connection.';
+    return SAFE_ERROR_MESSAGES.NETWORK;
   }
   
-  // For validation errors, be more specific but still safe
+  // For validation errors, check if message is in a safe pattern
   if (errorType === ErrorTypes.VALIDATION) {
     if (error.response?.data?.message) {
-      // Limit length and remove potential sensitive info
-      return error.response.data.message.substring(0, 100);
+      const message = error.response.data.message;
+      // Only allow messages that match safe patterns (no SQL, paths, or internal info)
+      if (!/[<>{}();='"`]/.test(message) && message.length < 100) {
+        return message;
+      }
     }
-    return 'Invalid data provided. Please check your input.';
+    return SAFE_ERROR_MESSAGES.VALIDATION;
+  }
+  
+  // Authentication errors
+  if (errorType === ErrorTypes.AUTHENTICATION) {
+    return SAFE_ERROR_MESSAGES.AUTHENTICATION;
+  }
+  
+  // Authorization errors
+  if (errorType === ErrorTypes.AUTHORIZATION) {
+    return SAFE_ERROR_MESSAGES.AUTHORIZATION;
   }
   
   // Generic fallback
-  return 'An error occurred. Please try again.';
+  return SAFE_ERROR_MESSAGES.UNKNOWN;
 };
 
 // Main error handler function
