@@ -1,4 +1,4 @@
-import React from 'react';
+
 import Sidebar from '../components/Sidebar';
 import CreditMonitor from '../components/CreditMonitor';
 import InteractiveTutorial from '../components/InteractiveTutorial';

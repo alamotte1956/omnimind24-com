@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -181,7 +181,7 @@ export default function ActionList() {
                   <CardContent className="p-12 text-center">
                     <Circle className="w-12 h-12 text-gray-600 mx-auto mb-4" />
                     <h3 className="text-white text-lg mb-2">No tasks yet</h3>
-                    <p className="text-gray-400">Click "Sync Salesforce" to import your tasks</p>
+                    <p className="text-gray-400">Click &quot;Sync Salesforce&quot; to import your tasks</p>
                   </CardContent>
                 </Card>
               )}

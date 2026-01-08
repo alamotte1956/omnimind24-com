@@ -2,6 +2,8 @@
  * Input sanitization utilities to prevent XSS and injection attacks
  */
 
+import { useState, useCallback } from 'react';
+
 // HTML sanitization using a simple whitelist approach
 export const sanitizeHTML = (html) => {
   if (typeof html !== 'string') return '';
@@ -14,7 +16,7 @@ export const sanitizeHTML = (html) => {
   ];
   
   // Remove all HTML tags except allowed ones
-  return html.replace(/<\\/?([^>]+)>/gi, (match, tag) => {
+  return html.replace(/<\/?([^>]+)>/gi, (match, tag) => {
     const tagName = tag.split(' ')[0].toLowerCase();
     return allowedTags.includes(tagName) ? match : '';
   });
@@ -27,7 +29,7 @@ export const sanitizeText = (text, maxLength = 1000) => {
   return text
     .replace(/[<>]/g, '') // Remove potential HTML tags
     .replace(/javascript:/gi, '') // Remove javascript protocol
-    .replace(/on\\w+=/gi, '') // Remove event handlers
+    .replace(/on\w+=/gi, '') // Remove event handlers
     .substring(0, maxLength);
 };
 
@@ -87,7 +89,7 @@ export const sanitizeApiKey = (key) => {
 export const sanitizeEmail = (email) => {
   if (typeof email !== 'string') return '';
   
-  const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const sanitized = email.toLowerCase().trim().substring(0, 254);
   
   return emailRegex.test(sanitized) ? sanitized : '';
@@ -97,7 +99,7 @@ export const sanitizeEmail = (email) => {
 export const sanitizePhone = (phone) => {
   if (typeof phone !== 'string') return '';
   
-  return phone.replace(/[^\\d+\\-\\s()]/g, '').substring(0, 20);
+  return phone.replace(/[^\d+\-\s()]/g, '').substring(0, 20);
 };
 
 // General purpose sanitizer
@@ -131,9 +133,9 @@ export const sanitize = (input, options = {}) => {
 
 // React Hook for sanitizing input
 export const useSanitizedInput = (initialValue, options = {}) => {
-  const [value, setValue] = React.useState(() => sanitize(initialValue, options));
+  const [value, setValue] = useState(() => sanitize(initialValue, options));
   
-  const setSanitizedValue = React.useCallback((newValue) => {
+  const setSanitizedValue = useCallback((newValue) => {
     setValue(sanitize(newValue, options));
   }, [options]);
   

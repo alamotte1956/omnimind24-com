@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent } from "@/components/ui/card";
@@ -66,7 +66,7 @@ export default function OnboardingWelcome() {
                   </h2>
                 </div>
                 <p className="text-gray-300 text-lg mb-6 max-w-3xl">
-                  You're all set to create amazing AI-powered content! Here's what you can do right now:
+                  You&apos;re all set to create amazing AI-powered content! Here&apos;s what you can do right now:
                 </p>
                 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">

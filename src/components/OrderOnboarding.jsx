@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { X, Zap, Lightbulb, Sparkles, CheckCircle } from 'lucide-react';
@@ -44,7 +43,7 @@ export default function OrderOnboarding({ onDismiss }) {
               <h4 className="font-semibold text-white">2. Use Templates</h4>
             </div>
             <p className="text-sm text-purple-100">
-              Start with proven templates for blogs, emails, social posts, and more. They're pre-optimized for conversions.
+              Start with proven templates for blogs, emails, social posts, and more. They&apos;re pre-optimized for conversions.
             </p>
           </div>
 

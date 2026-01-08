@@ -1,4 +1,4 @@
-import React, { memo, useCallback } from 'react';
+import { memo, useCallback, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,7 +42,7 @@ const TemplateForm = memo(({
   onCancel, 
   isLoading = false 
 }) => {
-  const [formData, setFormData] = React.useState({
+  const [formData, setFormData] = useState({
     name: template?.name || '',
     description: template?.description || '',
     content: template?.content || '',
@@ -177,7 +177,7 @@ const TemplateForm = memo(({
               required
             />
             <p className="text-xs text-gray-500 mt-1">
-              Use {{variable_name}} syntax for dynamic variables. Max 5000 characters.
+              Use {'{variable_name}'} syntax for dynamic variables. Max 5000 characters.
             </p>
           </div>
 

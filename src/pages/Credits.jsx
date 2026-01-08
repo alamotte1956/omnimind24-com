@@ -379,7 +379,7 @@ export default function Credits() {
                 
                 <div className="bg-blue-500 bg-opacity-10 border border-blue-500 rounded-lg p-4">
                   <p className="text-sm text-blue-300">
-                    ⚠️ Note: You'll need to set up a payment method first. The system will charge your saved payment method automatically when credits run low.
+                    ⚠️ Note: You&apos;ll need to set up a payment method first. The system will charge your saved payment method automatically when credits run low.
                   </p>
                 </div>
 
