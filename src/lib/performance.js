@@ -2,6 +2,8 @@
  * Performance monitoring utilities
  */
 
+import React from 'react';
+
 // Performance monitoring singleton
 class PerformanceMonitor {
   constructor() {
