@@ -5,7 +5,9 @@ import { Zap } from 'lucide-react';
 import MediaUploader from './MediaUploader';
 
 
-export default function QuickOrderForm() {
+// Props are accepted for API compatibility but not currently used in implementation
+// eslint-disable-next-line no-unused-vars
+export default function QuickOrderForm({ initialPrompt, taskType, onSubmit, isLoading }) {
   const [uploadedFileUrls, setUploadedFileUrls] = useState([]);
 
   const handleFilesUploaded = (urls) => {
