@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MessageCircle, X, Send, Loader2, Mail } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 import { toast } from 'sonner';
 
 export default function SupportChatbot() {
@@ -35,7 +35,7 @@ export default function SupportChatbot() {
     setIsLoading(true);
 
     try {
-      const { data } = await base44.functions.invoke('supportChatbot', {
+      const { data } = await apiClient.functions.invoke('supportChatbot', {
         message: input,
         conversation_history: messages
       });
@@ -60,12 +60,12 @@ export default function SupportChatbot() {
 
   const handleEscalate = async () => {
     try {
-      const user = await base44.auth.me();
+      const user = await apiClient.auth.me();
       const conversationLog = messages
         .map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`)
         .join('\n\n');
 
-      await base44.functions.invoke('sendResendEmail', {
+      await apiClient.functions.invoke('sendResendEmail', {
         to: 'support@omnimind24.com',
         subject: `Support Escalation - ${user.email}`,
         body: `Support ticket escalation from chatbot:\n\nUser: ${user.full_name} (${user.email})\n\nConversation:\n${conversationLog}`,

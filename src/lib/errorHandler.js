@@ -180,7 +180,7 @@ export const handleBase44Error = (error, operation) => {
   if (error.message?.includes('auth') || error.response?.status === 401) {
     // Redirect to login if needed
     if (typeof window !== 'undefined' && window.base44) {
-      window.base44.auth.redirectToLogin();
+      window.apiClient.auth.redirectToLogin();
     }
   }
   

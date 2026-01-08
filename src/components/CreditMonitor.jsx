@@ -1,11 +1,11 @@
 import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 
 export default function CreditMonitor() {
   const { data: user } = useQuery({
     queryKey: ['user'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => apiClient.auth.me()
   });
 
   const isStaffOrAdmin = user?.access_level === 'staff' || user?.access_level === 'admin';
@@ -13,7 +13,7 @@ export default function CreditMonitor() {
   const { data: credits } = useQuery({
     queryKey: ['credits', user?.id],
     queryFn: async () => {
-      const userCredits = await base44.entities.Credit.filter({ created_by: user.email });
+      const userCredits = await apiClient.entities.Credit.filter({ created_by: user.email });
       return userCredits[0] || null;
     },
     enabled: !!user && !isStaffOrAdmin,
@@ -23,7 +23,7 @@ export default function CreditMonitor() {
   const { data: autoPurchase } = useQuery({
     queryKey: ['auto-purchase', user?.id],
     queryFn: async () => {
-      const purchases = await base44.entities.AutoPurchase.filter({ 
+      const purchases = await apiClient.entities.AutoPurchase.filter({ 
         created_by: user.email,
         is_active: true 
       });
@@ -39,7 +39,7 @@ export default function CreditMonitor() {
     // Check if balance is below threshold
     if (credits.balance < autoPurchase.trigger_threshold) {
       // Trigger auto-purchase
-      base44.functions.invoke('triggerAutoPurchase', {})
+      apiClient.functions.invoke('triggerAutoPurchase', {})
         .catch(error => {
           // Error handled by toast notification
         });

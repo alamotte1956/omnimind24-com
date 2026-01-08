@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Share2, Loader2 } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
@@ -19,7 +19,7 @@ export default function ShareContentDialog({ contentOrderId, trigger }) {
 
   const shareMutation = useMutation({
     mutationFn: async (data) => {
-      return await base44.entities.ContentShare.create(data);
+      return await apiClient.entities.ContentShare.create(data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['content-shares']);

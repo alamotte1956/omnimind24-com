@@ -187,6 +187,18 @@ function createEntity(name) {
       return client.get(endpoint);
     },
     
+    // List with sort (backward compatibility with Base44)
+    list: async (sort, limit) => {
+      const params = new URLSearchParams();
+      if (sort) params.append('sort', sort);
+      if (limit) params.append('limit', limit);
+      
+      const queryString = params.toString();
+      const endpoint = queryString ? `${basePath}?${queryString}` : basePath;
+      
+      return client.get(endpoint);
+    },
+    
     // Get by ID
     findById: async (id) => {
       return client.get(`${basePath}/${id}`);

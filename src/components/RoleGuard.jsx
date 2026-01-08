@@ -1,12 +1,12 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 import { AlertCircle } from 'lucide-react';
 
 export default function RoleGuard({ children, allowedRoles = ['admin', 'staff', 'user'] }) {
   const { data: user } = useQuery({
     queryKey: ['user'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => apiClient.auth.me()
   });
 
   if (!user) {

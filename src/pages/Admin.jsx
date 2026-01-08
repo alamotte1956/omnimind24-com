@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -25,47 +25,47 @@ export default function Admin() {
 
   const { data: currentUser } = useQuery({
     queryKey: ['user'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => apiClient.auth.me()
   });
 
   const { data: allUsers = [] } = useQuery({
     queryKey: ['allUsers'],
-    queryFn: () => base44.entities.User.list('-created_date')
+    queryFn: () => apiClient.entities.User.list('-created_date')
   });
 
   const { data: contentOrders = [] } = useQuery({
     queryKey: ['content-orders-admin'],
-    queryFn: () => base44.entities.ContentOrder.list('-created_date')
+    queryFn: () => apiClient.entities.ContentOrder.list('-created_date')
   });
 
   const { data: transactions = [] } = useQuery({
     queryKey: ['transactions-admin'],
-    queryFn: () => base44.entities.CreditTransaction.list('-created_date', 100)
+    queryFn: () => apiClient.entities.CreditTransaction.list('-created_date', 100)
   });
 
   const { data: orders = [] } = useQuery({
     queryKey: ['orders-admin'],
-    queryFn: () => base44.entities.Order.list('-created_date')
+    queryFn: () => apiClient.entities.Order.list('-created_date')
   });
 
   const { data: templates = [] } = useQuery({
     queryKey: ['templates-admin'],
-    queryFn: () => base44.entities.UserTemplate.list('-created_date')
+    queryFn: () => apiClient.entities.UserTemplate.list('-created_date')
   });
 
   const { data: referrals = [] } = useQuery({
     queryKey: ['referrals-admin'],
-    queryFn: () => base44.entities.Referral.list('-created_date')
+    queryFn: () => apiClient.entities.Referral.list('-created_date')
   });
 
   const { data: roles = [] } = useQuery({
     queryKey: ['roles'],
-    queryFn: () => base44.entities.Role.list()
+    queryFn: () => apiClient.entities.Role.list()
   });
 
   const updateRoleMutation = useMutation({
     mutationFn: ({ userId, accessLevel }) => 
-      base44.entities.User.update(userId, { access_level: accessLevel }),
+      apiClient.entities.User.update(userId, { access_level: accessLevel }),
     onSuccess: () => {
       queryClient.invalidateQueries(['allUsers']);
       toast.success('User role updated');
@@ -74,7 +74,7 @@ export default function Admin() {
 
   const assignCustomRoleMutation = useMutation({
     mutationFn: ({ userId, roleId }) => 
-      base44.entities.User.update(userId, { custom_role_id: roleId || null }),
+      apiClient.entities.User.update(userId, { custom_role_id: roleId || null }),
     onSuccess: () => {
       queryClient.invalidateQueries(['allUsers']);
       toast.success('Custom role assigned');

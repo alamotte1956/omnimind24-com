@@ -6,6 +6,7 @@ import { createEntity, apiClient } from './apiClient';
  * Each entity provides CRUD operations:
  * - find(options) - Query entities with filters, sorting, pagination
  * - findById(id) - Get a single entity by ID
+ * - list(sort, limit) - List entities with sort (backward compatible)
  * - create(data) - Create a new entity
  * - update(id, data) - Update an entity
  * - patch(id, data) - Partially update an entity
@@ -76,5 +77,8 @@ export const FileExport = createEntity('file-exports');
 
 export const ModelFavorite = createEntity('model-favorites');
 
-// Auth API
-export const User = apiClient.auth;
+// User entity with special auth methods
+export const User = {
+  ...createEntity('users'),
+  ...apiClient.auth
+};

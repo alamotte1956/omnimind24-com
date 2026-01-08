@@ -87,9 +87,9 @@ export default function Credits() {
   const { data: credits } = useQuery({
     queryKey: ['credits', user?.id],
     queryFn: async () => {
-      const userCredits = await base44.entities.Credit.filter({ created_by: user.email });
+      const userCredits = await apiClient.entities.Credit.filter({ created_by: user.email });
       if (userCredits.length === 0) {
-        return await base44.entities.Credit.create({ 
+        return await apiClient.entities.Credit.create({ 
           balance: 0, 
           total_purchased: 0, 
           total_used: 0,
@@ -103,20 +103,20 @@ export default function Credits() {
 
   const { data: transactions = [] } = useQuery({
     queryKey: ['credit-transactions', user?.id],
-    queryFn: () => base44.entities.CreditTransaction.list('-created_date', 50),
+    queryFn: () => apiClient.entities.CreditTransaction.list('-created_date', 50),
     enabled: !!user && !isStaffOrAdmin
   });
 
   const { data: orders = [] } = useQuery({
     queryKey: ['orders', user?.id],
-    queryFn: () => base44.entities.Order.filter({ created_by: user.email }),
+    queryFn: () => apiClient.entities.Order.filter({ created_by: user.email }),
     enabled: !!user && !isStaffOrAdmin
   });
 
   const { data: autoPurchase } = useQuery({
     queryKey: ['auto-purchase', user?.id],
     queryFn: async () => {
-      const purchases = await base44.entities.AutoPurchase.filter({ created_by: user.email });
+      const purchases = await apiClient.entities.AutoPurchase.filter({ created_by: user.email });
       if (purchases.length > 0) {
         setAutoThreshold(purchases[0].trigger_threshold);
         setAutoAmount(purchases[0].credits_amount);
@@ -129,7 +129,7 @@ export default function Credits() {
 
   const purchaseMutation = useMutation({
     mutationFn: async (pkg) => {
-      const response = await base44.functions.invoke('createPaymentIntent', {
+      const response = await apiClient.functions.invoke('createPaymentIntent', {
         amount: pkg.amount,
         price: pkg.price,
         isRecurring: false
@@ -148,7 +148,7 @@ export default function Credits() {
 
   const completeTestOrderMutation = useMutation({
     mutationFn: async (orderId) => {
-      const response = await base44.functions.invoke('completeTestOrder', { orderId });
+      const response = await apiClient.functions.invoke('completeTestOrder', { orderId });
       return response.data;
     },
     onSuccess: (data) => {
@@ -176,10 +176,10 @@ export default function Credits() {
   const toggleAutoMutation = useMutation({
     mutationFn: async (isActive) => {
       if (autoPurchase) {
-        return await base44.entities.AutoPurchase.update(autoPurchase.id, { is_active: isActive });
+        return await apiClient.entities.AutoPurchase.update(autoPurchase.id, { is_active: isActive });
       } else {
         const selectedPkg = CREDIT_PACKAGES.find(p => p.amount === autoAmount);
-        return await base44.entities.AutoPurchase.create({
+        return await apiClient.entities.AutoPurchase.create({
           credits_amount: autoAmount,
           trigger_threshold: autoThreshold,
           price: selectedPkg?.price || 45,
@@ -197,7 +197,7 @@ export default function Credits() {
     mutationFn: async () => {
       const selectedPkg = CREDIT_PACKAGES.find(p => p.amount === autoAmount);
       if (autoPurchase) {
-        return await base44.entities.AutoPurchase.update(autoPurchase.id, {
+        return await apiClient.entities.AutoPurchase.update(autoPurchase.id, {
           credits_amount: autoAmount,
           trigger_threshold: autoThreshold,
           price: selectedPkg?.price || 45

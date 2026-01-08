@@ -1,6 +1,6 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -16,11 +16,11 @@ export default function ActionList() {
 
   const { data: tasks = [], isLoading } = useQuery({
     queryKey: ['action-items'],
-    queryFn: () => base44.entities.ActionItem.list('-due_date')
+    queryFn: () => apiClient.entities.ActionItem.list('-due_date')
   });
 
   const syncMutation = useMutation({
-    mutationFn: () => base44.functions.invoke('syncSalesforceTasks'),
+    mutationFn: () => apiClient.functions.invoke('syncSalesforceTasks'),
     onSuccess: (response) => {
       queryClient.invalidateQueries(['action-items']);
       toast.success(`Synced ${response.data.synced} new tasks, updated ${response.data.updated}`);
@@ -33,7 +33,7 @@ export default function ActionList() {
   const toggleStatusMutation = useMutation({
     mutationFn: async ({ id, currentStatus }) => {
       const newStatus = currentStatus === 'completed' ? 'pending' : 'completed';
-      await base44.entities.ActionItem.update(id, { status: newStatus });
+      await apiClient.entities.ActionItem.update(id, { status: newStatus });
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['action-items']);

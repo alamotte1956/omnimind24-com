@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,12 +16,12 @@ export default function ModelFeedbackDialog({ orderId, modelId, trigger }) {
   const submitFeedbackMutation = useMutation({
     mutationFn: async () => {
       // Find the performance log for this order
-      const logs = await base44.entities.ModelPerformanceLog.filter({ 
+      const logs = await apiClient.entities.ModelPerformanceLog.filter({ 
         content_order_id: orderId 
       });
       
       if (logs.length > 0) {
-        await base44.entities.ModelPerformanceLog.update(logs[0].id, {
+        await apiClient.entities.ModelPerformanceLog.update(logs[0].id, {
           user_rating: rating,
           user_feedback: feedback
         });

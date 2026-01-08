@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -27,18 +27,18 @@ export default function OrderHistory() {
 
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ['order-history'],
-    queryFn: () => base44.entities.ContentOrder.list('-created_date')
+    queryFn: () => apiClient.entities.ContentOrder.list('-created_date')
   });
 
   const { data: user } = useQuery({
     queryKey: ['user'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => apiClient.auth.me()
   });
 
   const deleteOrdersMutation = useMutation({
     mutationFn: async (orderIds) => {
       for (const id of orderIds) {
-        await base44.entities.ContentOrder.delete(id);
+        await apiClient.entities.ContentOrder.delete(id);
       }
     },
     onSuccess: () => {
@@ -53,7 +53,7 @@ export default function OrderHistory() {
 
   const toggleFavoriteMutation = useMutation({
     mutationFn: ({ id, isFavorite }) => 
-      base44.entities.ContentOrder.update(id, { is_favorite: !isFavorite }),
+      apiClient.entities.ContentOrder.update(id, { is_favorite: !isFavorite }),
     onSuccess: () => {
       queryClient.invalidateQueries(['order-history']);
       toast.success('Favorite updated');
@@ -65,7 +65,7 @@ export default function OrderHistory() {
       const { data: credits } = await queryClient.fetchQuery({
         queryKey: ['credits'],
         queryFn: async () => {
-          const allCredits = await base44.entities.Credit.filter({ created_by: user?.email });
+          const allCredits = await apiClient.entities.Credit.filter({ created_by: user?.email });
           return allCredits[0];
         }
       });
@@ -76,12 +76,12 @@ export default function OrderHistory() {
           throw new Error('Insufficient credits. Please purchase more credits to continue.');
         }
 
-        await base44.entities.Credit.update(credits.id, {
+        await apiClient.entities.Credit.update(credits.id, {
           balance: credits.balance - creditCost,
           total_used: (credits.total_used || 0) + creditCost
         });
 
-        await base44.entities.CreditTransaction.create({
+        await apiClient.entities.CreditTransaction.create({
           transaction_type: 'usage',
           amount: -creditCost,
           description: `Content generation (reorder): ${order.task_type}`,
@@ -89,14 +89,14 @@ export default function OrderHistory() {
         });
       }
 
-      const newOrder = await base44.entities.ContentOrder.create({
+      const newOrder = await apiClient.entities.ContentOrder.create({
         task_type: order.task_type,
         input_data: order.input_data,
         title: `${order.title} (Copy)`,
         status: 'processing'
       });
 
-      await base44.functions.invoke('processOrder', { order_id: newOrder.id });
+      await apiClient.functions.invoke('processOrder', { order_id: newOrder.id });
       return newOrder;
     },
     onSuccess: () => {

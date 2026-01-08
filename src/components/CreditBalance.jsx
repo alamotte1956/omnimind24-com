@@ -1,6 +1,6 @@
 
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 import { Coins } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { createPageUrl } from '../utils';
@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 export default function CreditBalance() {
   const { data: user } = useQuery({
     queryKey: ['user'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => apiClient.auth.me()
   });
 
   const isStaffOrAdmin = user?.access_level === 'staff' || user?.access_level === 'admin';
@@ -17,7 +17,7 @@ export default function CreditBalance() {
   const { data: credits } = useQuery({
     queryKey: ['credits', user?.id],
     queryFn: async () => {
-      const userCredits = await base44.entities.Credit.filter({ created_by: user.email });
+      const userCredits = await apiClient.entities.Credit.filter({ created_by: user.email });
       return userCredits[0] || { balance: 0 };
     },
     enabled: !!user && !isStaffOrAdmin

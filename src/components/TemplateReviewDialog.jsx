@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -17,19 +17,19 @@ export default function TemplateReviewDialog({ templateId, isOpen, onClose }) {
 
   const { data: user } = useQuery({
     queryKey: ['user'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => apiClient.auth.me()
   });
 
   const { data: reviews = [], isLoading } = useQuery({
     queryKey: ['template-reviews', templateId],
-    queryFn: () => base44.entities.TemplateReview.filter({ template_id: templateId }, '-created_date'),
+    queryFn: () => apiClient.entities.TemplateReview.filter({ template_id: templateId }, '-created_date'),
     enabled: !!templateId
   });
 
   const { data: userReview } = useQuery({
     queryKey: ['user-template-review', templateId, user?.email],
     queryFn: async () => {
-      const userReviews = await base44.entities.TemplateReview.filter({ 
+      const userReviews = await apiClient.entities.TemplateReview.filter({ 
         template_id: templateId,
         reviewer_email: user?.email 
       });
@@ -41,9 +41,9 @@ export default function TemplateReviewDialog({ templateId, isOpen, onClose }) {
   const submitReviewMutation = useMutation({
     mutationFn: async (data) => {
       if (userReview) {
-        return base44.entities.TemplateReview.update(userReview.id, data);
+        return apiClient.entities.TemplateReview.update(userReview.id, data);
       } else {
-        return base44.entities.TemplateReview.create(data);
+        return apiClient.entities.TemplateReview.create(data);
       }
     },
     onSuccess: async () => {
@@ -51,10 +51,10 @@ export default function TemplateReviewDialog({ templateId, isOpen, onClose }) {
       queryClient.invalidateQueries(['user-template-review']);
       
       // Update template average rating
-      const allReviews = await base44.entities.TemplateReview.filter({ template_id: templateId });
+      const allReviews = await apiClient.entities.TemplateReview.filter({ template_id: templateId });
       const avgRating = allReviews.reduce((sum, r) => sum + r.rating, 0) / allReviews.length;
       
-      await base44.entities.UserTemplate.update(templateId, {
+      await apiClient.entities.UserTemplate.update(templateId, {
         average_rating: avgRating,
         review_count: allReviews.length
       });
@@ -73,7 +73,7 @@ export default function TemplateReviewDialog({ templateId, isOpen, onClose }) {
 
   const markHelpfulMutation = useMutation({
     mutationFn: ({ reviewId, currentCount }) => 
-      base44.entities.TemplateReview.update(reviewId, { helpful_count: currentCount + 1 }),
+      apiClient.entities.TemplateReview.update(reviewId, { helpful_count: currentCount + 1 }),
     onSuccess: () => {
       queryClient.invalidateQueries(['template-reviews']);
       toast.success('Thanks for your feedback!');

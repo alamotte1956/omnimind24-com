@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
@@ -10,7 +10,7 @@ import { Badge } from "@/components/ui/badge";
 export default function ModelMonitoring() {
   const { data: logs = [], isLoading } = useQuery({
     queryKey: ['model-performance-logs'],
-    queryFn: () => base44.entities.ModelPerformanceLog.list('-created_date', 1000)
+    queryFn: () => apiClient.entities.ModelPerformanceLog.list('-created_date', 1000)
   });
 
   const stats = useMemo(() => {

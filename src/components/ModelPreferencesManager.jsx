@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
@@ -33,13 +33,13 @@ export default function ModelPreferencesManager() {
 
   const { data: user } = useQuery({
     queryKey: ['user'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => apiClient.auth.me()
   });
 
   const { data: savedPreferences = [], isLoading } = useQuery({
     queryKey: ['model-preferences', user?.id],
     queryFn: async () => {
-      const prefs = await base44.entities.ModelPreference.filter({ created_by: user.email });
+      const prefs = await apiClient.entities.ModelPreference.filter({ created_by: user.email });
       const prefsMap = {};
       prefs.forEach(p => {
         prefsMap[p.task_type] = { model: p.preferred_model, auto: p.auto_select, id: p.id };
@@ -57,14 +57,14 @@ export default function ModelPreferencesManager() {
       for (const [taskType, pref] of Object.entries(preferences)) {
         if (pref.id) {
           promises.push(
-            base44.entities.ModelPreference.update(pref.id, {
+            apiClient.entities.ModelPreference.update(pref.id, {
               preferred_model: pref.model,
               auto_select: pref.auto
             })
           );
         } else {
           promises.push(
-            base44.entities.ModelPreference.create({
+            apiClient.entities.ModelPreference.create({
               task_type: taskType,
               preferred_model: pref.model,
               auto_select: pref.auto

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,17 +25,17 @@ export default function Onboarding() {
 
   const { data: user } = useQuery({
     queryKey: ['user'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => apiClient.auth.me()
   });
 
   const saveMutation = useMutation({
     mutationFn: async (data) => {
-      const profile = await base44.entities.CostarProfile.create({
+      const profile = await apiClient.entities.CostarProfile.create({
         ...data,
         is_active: true
       });
 
-      await base44.auth.updateMe({ costar_completed: true });
+      await apiClient.auth.updateMe({ costar_completed: true });
       
       return profile;
     },
