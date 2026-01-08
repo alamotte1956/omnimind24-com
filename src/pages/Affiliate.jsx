@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -231,7 +231,7 @@ export default function Affiliate() {
                 </div>
                 <div className="bg-green-600/10 border border-green-500 rounded-lg p-4">
                   <p className="text-sm text-green-300">
-                    ✨ Redeem a friend's code and you both get 15 credits instantly!
+                    ✨ Redeem a friend&apos;s code and you both get 15 credits instantly!
                   </p>
                 </div>
               </CardContent>

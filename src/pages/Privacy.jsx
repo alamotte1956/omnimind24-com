@@ -45,7 +45,7 @@ export default function Privacy() {
 
           <section>
             <h2 className="text-xl font-semibold text-white mb-3">4. AI Content Processing</h2>
-            <p>Content you generate using our AI services may be processed by third-party AI providers (OpenAI, Anthropic, Google, etc.). We do not share your personal information with these providers beyond what's necessary to process your requests.</p>
+            <p>Content you generate using our AI services may be processed by third-party AI providers (OpenAI, Anthropic, Google, etc.). We do not share your personal information with these providers beyond what&apos;s necessary to process your requests.</p>
           </section>
 
           <section>

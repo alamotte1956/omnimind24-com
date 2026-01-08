@@ -1,24 +1,23 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { 
-  Users, Settings, TrendingUp, Database, Activity, DollarSign, 
-  AlertCircle, CheckCircle, Clock, Zap, FileText, MessageSquare,
-  Calendar, TrendingDown, ArrowUpRight, ArrowDownRight, Target,
-  Shield, Bell, BarChart3, Sparkles, Star
+  Users, TrendingUp, Activity, DollarSign, 
+  CheckCircle, Zap, FileText,
+  TrendingDown, ArrowUpRight, ArrowDownRight, Target,
+  BarChart3, Sparkles, Star
 } from 'lucide-react';
 import AuthGuard from '../components/AuthGuard';
 import RoleGuard from '../components/RoleGuard';
 import UserRoleBadge from '../components/UserRoleBadge';
 import RoleManagement from '../components/RoleManagement';
 import { toast } from 'sonner';
-import { format, subDays, startOfDay, endOfDay } from 'date-fns';
+import { subDays, startOfDay } from 'date-fns';
 
 export default function Admin() {
   const queryClient = useQueryClient();
@@ -37,11 +36,6 @@ export default function Admin() {
   const { data: contentOrders = [] } = useQuery({
     queryKey: ['content-orders-admin'],
     queryFn: () => base44.entities.ContentOrder.list('-created_date')
-  });
-
-  const { data: credits = [] } = useQuery({
-    queryKey: ['credits-admin'],
-    queryFn: () => base44.entities.Credit.list()
   });
 
   const { data: transactions = [] } = useQuery({
@@ -95,7 +89,6 @@ export default function Admin() {
 
     // Filter data by time range
     const recentOrders = contentOrders.filter(o => new Date(o.created_date) >= startDate);
-    const recentTransactions = transactions.filter(t => new Date(t.created_date) >= startDate);
     const recentUsers = allUsers.filter(u => new Date(u.created_date) >= startDate);
 
     // Calculate previous period for comparison

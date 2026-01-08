@@ -1,28 +1,17 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Sparkles, Copy, CheckCircle, Lightbulb, Zap, MessageSquare, HelpCircle } from 'lucide-react';
+import { Loader2, Sparkles, Zap, HelpCircle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 import AuthGuard from '../components/AuthGuard';
 import OnboardingGuard from '../components/OnboardingGuard';
-import ContentIdeaCard from '../components/ContentIdeaCard';
 import QuickOrderForm from '../components/QuickOrderForm';
-import OrderOnboarding from '../components/OrderOnboarding';
-import ShareContentDialog from '../components/ShareContentDialog';
-import CommentSection from '../components/CommentSection';
-import ContentSearchFilter from '../components/ContentSearchFilter';
-import ContentCard from '../components/ContentCard';
 import FolderManager from '../components/FolderManager';
-import AdvancedSearch from '../components/AdvancedSearch';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
 
 export default function ContentOrders() {
   const queryClient = useQueryClient();
@@ -30,10 +19,6 @@ export default function ContentOrders() {
   const [selectedCreditCost, setSelectedCreditCost] = useState(0);
   const [quickInput, setQuickInput] = useState('');
   const [productCounts, setProductCounts] = useState({});
-  const [showOnboarding, setShowOnboarding] = useState(() => {
-    return localStorage.getItem('hideOrderOnboarding') !== 'true';
-  });
-  const [selectedOrderForComments, setSelectedOrderForComments] = useState(null);
   const [selectedFolder, setSelectedFolder] = useState(null);
   const [selectedTags, setSelectedTags] = useState([]);
   const [dateRange, setDateRange] = useState('all');
@@ -44,7 +29,7 @@ export default function ContentOrders() {
     showFavorites: false
   });
 
-  const { data: orders = [], isLoading } = useQuery({
+  const { data: orders = [] } = useQuery({
     queryKey: ['content-orders'],
     queryFn: () => base44.entities.ContentOrder.list('-created_date')
   });
@@ -134,22 +119,6 @@ export default function ContentOrders() {
     }
   });
 
-  const cancelOrderMutation = useMutation({
-    mutationFn: async (orderId) => {
-      await base44.entities.ContentOrder.update(orderId, {
-        status: 'failed',
-        output_content: 'Cancelled by user'
-      });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['content-orders']);
-      toast.success('Order cancelled');
-    },
-    onError: (error) => {
-      toast.error('Failed to cancel order: ' + error.message);
-    }
-  });
-
   const handleStartOver = () => {
     setSelectedCreditCost(0);
     setProductCounts({});
@@ -159,16 +128,6 @@ export default function ContentOrders() {
 
   const handleQuickSubmit = (data) => {
     createOrderMutation.mutate(data);
-  };
-
-  const dismissOnboarding = () => {
-    setShowOnboarding(false);
-    localStorage.setItem('hideOrderOnboarding', 'true');
-  };
-
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text);
-    toast.success('Content copied to clipboard');
   };
 
 
@@ -232,24 +191,6 @@ export default function ContentOrders() {
       return true;
     });
   }, [orders, selectedFolder, filters, selectedTags, dateRange]);
-
-  const handleTagToggle = (tag) => {
-    setSelectedTags(prev => 
-      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
-    );
-  };
-
-  const clearAllFilters = () => {
-    setFilters({
-      searchTerm: '',
-      taskType: 'all',
-      status: 'all',
-      showFavorites: false
-    });
-    setSelectedTags([]);
-    setDateRange('all');
-    setSelectedFolder(null);
-  };
 
   return (
     <AuthGuard>

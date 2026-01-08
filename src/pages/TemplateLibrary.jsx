@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { base44 } from '@/api/base44Client';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -21,7 +21,7 @@ import OnboardingGuard from '../components/OnboardingGuard';
 import TemplateReviewDialog from '../components/TemplateReviewDialog';
 import { toast } from 'sonner';
 
-const ICON_OPTIONS = [
+const _ICON_OPTIONS = [
   'FileText', 'Mail', 'MessageSquare', 'Youtube', 'Instagram', 
   'Facebook', 'Twitter', 'Linkedin', 'Video', 'Megaphone',
   'ShoppingCart', 'Newspaper', 'BookOpen', 'Code', 'Briefcase'
@@ -139,7 +139,7 @@ export default function TemplateLibrary() {
 
   const duplicateTemplateMutation = useMutation({
     mutationFn: async (template) => {
-      const { id, created_date, updated_date, created_by, usage_count, ...templateData } = template;
+      const { id: _id, created_date: _created_date, updated_date: _updated_date, created_by: _created_by, usage_count: _usage_count, ...templateData } = template;
       return base44.entities.UserTemplate.create({
         ...templateData,
         name: `${template.name} (Copy)`,
