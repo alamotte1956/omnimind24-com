@@ -17,8 +17,6 @@ export default function Sidebar({ currentPage }) {
   const userRole = user?.access_level || 'user';
   const isAdmin = userRole === 'admin';
 
-  const _isStaffOrAdmin = userRole === 'staff' || userRole === 'admin';
-
   const navItems = [
     { name: 'Credits', page: 'Credits', icon: Coins },
     { name: 'Orders', page: 'ContentOrders', icon: Sparkles },
