@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { apiClient } from '@/api/apiClient';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +25,13 @@ const CREDIT_PACKAGES = [
   { amount: 2500, price: 180, popular: false }
 ];
 
+/**
+ * Credits Page - Credit management and purchasing
+ * 
+ * TODO: Backend API needed:
+ * - GET /api/auth/me - Get current user
+ * - POST /api/functions/verifyCheckoutSession - Verify Stripe checkout
+ */
 export default function Credits() {
   const queryClient = useQueryClient();
   const [autoThreshold, setAutoThreshold] = useState(50);
@@ -33,7 +40,7 @@ export default function Credits() {
 
   const { data: user } = useQuery({
     queryKey: ['user'],
-    queryFn: () => base44.auth.me()
+    queryFn: () => apiClient.auth.me()
   });
 
   // Handle return from Stripe Checkout
@@ -45,7 +52,7 @@ export default function Credits() {
 
     const verifyPayment = async () => {
       try {
-        const response = await base44.functions.invoke('verifyCheckoutSession', { sessionId });
+        const response = await apiClient.functions.invoke('verifyCheckoutSession', { sessionId });
         const data = response.data;
         
         if (data.alreadyProcessed) {

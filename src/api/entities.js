@@ -1,61 +1,80 @@
-import { base44 } from './base44Client';
+import { createEntity, apiClient } from './apiClient';
 
+/**
+ * Entity APIs - Replaces Base44 entity operations
+ * 
+ * Each entity provides CRUD operations:
+ * - find(options) - Query entities with filters, sorting, pagination
+ * - findById(id) - Get a single entity by ID
+ * - create(data) - Create a new entity
+ * - update(id, data) - Update an entity
+ * - patch(id, data) - Partially update an entity
+ * - delete(id) - Delete an entity
+ * - query(filter) - Custom query
+ * 
+ * TODO: Backend API endpoints needed for each entity:
+ * - GET /api/{entity} - List entities
+ * - GET /api/{entity}/:id - Get entity by ID
+ * - POST /api/{entity} - Create entity
+ * - PUT /api/{entity}/:id - Update entity
+ * - PATCH /api/{entity}/:id - Partial update
+ * - DELETE /api/{entity}/:id - Delete entity
+ * - POST /api/{entity}/query - Custom query
+ */
 
-export const Document = base44.entities.Document;
+export const Document = createEntity('documents');
 
-export const Conversation = base44.entities.Conversation;
+export const Conversation = createEntity('conversations');
 
-export const Credit = base44.entities.Credit;
+export const Credit = createEntity('credits');
 
-export const Order = base44.entities.Order;
+export const Order = createEntity('orders');
 
-export const APIKey = base44.entities.APIKey;
+export const APIKey = createEntity('apikeys');
 
-export const Subscription = base44.entities.Subscription;
+export const Subscription = createEntity('subscriptions');
 
-export const CostarProfile = base44.entities.CostarProfile;
+export const CostarProfile = createEntity('costar-profiles');
 
-export const ModelPreference = base44.entities.ModelPreference;
+export const ModelPreference = createEntity('model-preferences');
 
-export const ModelBenchmark = base44.entities.ModelBenchmark;
+export const ModelBenchmark = createEntity('model-benchmarks');
 
-export const ActionItem = base44.entities.ActionItem;
+export const ActionItem = createEntity('action-items');
 
-export const ContentOrder = base44.entities.ContentOrder;
+export const ContentOrder = createEntity('content-orders');
 
-export const CreditTransaction = base44.entities.CreditTransaction;
+export const CreditTransaction = createEntity('credit-transactions');
 
-export const AutoPurchase = base44.entities.AutoPurchase;
+export const AutoPurchase = createEntity('auto-purchases');
 
-export const ContentIdea = base44.entities.ContentIdea;
+export const ContentIdea = createEntity('content-ideas');
 
-export const ContentShare = base44.entities.ContentShare;
+export const ContentShare = createEntity('content-shares');
 
-export const ContentComment = base44.entities.ContentComment;
+export const ContentComment = createEntity('content-comments');
 
-export const ContentFolder = base44.entities.ContentFolder;
+export const ContentFolder = createEntity('content-folders');
 
-export const Referral = base44.entities.Referral;
+export const Referral = createEntity('referrals');
 
-export const UserTemplate = base44.entities.UserTemplate;
+export const UserTemplate = createEntity('user-templates');
 
-export const TemplateReview = base44.entities.TemplateReview;
+export const TemplateReview = createEntity('template-reviews');
 
-export const Role = base44.entities.Role;
+export const Role = createEntity('roles');
 
-export const ContentPerformance = base44.entities.ContentPerformance;
+export const ContentPerformance = createEntity('content-performance');
 
-export const SEOAnalysis = base44.entities.SEOAnalysis;
+export const SEOAnalysis = createEntity('seo-analysis');
 
-export const FineTunedModel = base44.entities.FineTunedModel;
+export const FineTunedModel = createEntity('fine-tuned-models');
 
-export const ModelPerformanceLog = base44.entities.ModelPerformanceLog;
+export const ModelPerformanceLog = createEntity('model-performance-logs');
 
-export const FileExport = base44.entities.FileExport;
+export const FileExport = createEntity('file-exports');
 
-export const ModelFavorite = base44.entities.ModelFavorite;
+export const ModelFavorite = createEntity('model-favorites');
 
-
-
-// auth sdk:
-export const User = base44.auth;
+// Auth API
+export const User = apiClient.auth;
